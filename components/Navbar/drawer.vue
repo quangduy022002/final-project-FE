@@ -5,6 +5,7 @@
       app
       permanent
     >
+    <v-layout column fill-height>
     <v-list>
       <v-list-item v-for="item in items" :key="item.title" :to="item.to">
         <v-list-item-icon>
@@ -30,6 +31,17 @@
           </v-list-item>
       </v-list-group>
     </v-list>
+    <v-spacer></v-spacer>
+    <v-list>
+      <v-list-item v-for="item in itemsBottom" :key="item.title" :to="item.to">
+        <v-list-item-icon>
+          <v-icon>{{item.icon}}</v-icon>
+        </v-list-item-icon>
+
+        <v-list-item-title>{{item.title}}</v-list-item-title>
+      </v-list-item>
+    </v-list>
+  </v-layout>
   </v-navigation-drawer>
 </template>
 
@@ -62,13 +74,24 @@ export default {
       ],
       project: {
             icon: "mdi-view-grid-outline",
-            title: "project",
+            title: "Project",
             items: [
             { title: 'Project 1', id: 0},
             { title: 'Project 2', id: 1 },
             { title: 'Project 3', id: 2 },
             ]
+        },
+        itemsBottom: [{
+          title: "Setting",
+          icon: "mdi-cog",
+          to: "/setting"
+        },
+        {
+          title: "Logout",
+          icon: "mdi-logout",
+          to: "/logout"
         }
+      ]
     }),
   computed: {
   }
