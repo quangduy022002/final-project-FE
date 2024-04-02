@@ -1,10 +1,8 @@
 <template>
   <v-app dark>
-    <navbar-drawer v-model="drawer"></navbar-drawer>
-    <v-main>
-      <v-container>
+    <navbar-drawer v-if="$auth.loggedIn" v-model="drawer"></navbar-drawer>
+    <v-main class="overflow-y-auto">
         <Nuxt />
-      </v-container>
     </v-main>
   </v-app>
 </template>
@@ -16,6 +14,9 @@ export default {
     return {
       drawer: false,
     }
+  },
+  mounted(){
+    console.log(this.$auth)
   }
 }
 </script>

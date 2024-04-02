@@ -28,9 +28,10 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '~/plugins/rules'
   ],
 
-  // Auto import components: https://go.nuxtjs.dev/config-components
+  // Auto import components: https://go.nuxtjapi/auth/users.dev/config-components
   components: true,
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
@@ -41,8 +42,34 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    '@nuxtjs/axios', '@nuxtjs/auth'
   ],
-
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: {
+            url: '/auth/login/',
+            method: 'post',
+            propertyName: 'data.token'
+          },
+          tokenRequired: true,
+          logout: false
+        }
+      },
+      redirect: {
+        login: '/login',
+        logout: '/login',
+        home: false
+      },
+    }
+  },
+  axios: {
+    baseURL: 'http://localhost:8080/',
+    debug: false,
+    proxyHeaders: false,
+    credentials: false
+  },
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
     customVariables: ['~/assets/variables.scss'],

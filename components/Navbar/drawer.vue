@@ -1,6 +1,7 @@
 <template>
   <v-navigation-drawer
-      v-model="drawer"
+      v-model="value"
+      color="primary"
       fixed
       app
       permanent
@@ -9,20 +10,23 @@
     <v-list>
       <v-list-item v-for="item in items" :key="item.title" :to="item.to">
         <v-list-item-icon>
-          <v-icon>{{item.icon}}</v-icon>
+          <v-icon color="white">{{item.icon}}</v-icon>
         </v-list-item-icon>
 
-        <v-list-item-title>{{item.title}}</v-list-item-title>
+        <v-list-item-title class="white--text">{{item.title}}</v-list-item-title>
       </v-list-item>
 
       <v-list-group
-        :value="true"
-        :prepend-icon="project.icon"
+        color="white"
       >
+        <template #prependIcon>
+          <v-icon color="white">{{project.icon}}</v-icon>
+        </template>
         <template v-slot:activator>
-          <v-list-item-title>{{project.title}}</v-list-item-title>
+          <v-list-item-title class="white--text">{{project.title}}</v-list-item-title>
         </template>
         <v-list-item
+            class="white--text"
             v-for="projectItem in project.items"
             :key="projectItem.title"
             :to="`/project/${projectItem.id}`"
