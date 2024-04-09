@@ -41,7 +41,7 @@
           >
             <v-list-item-title>{{ projectItem.name }}</v-list-item-title>
           </v-list-item>
-          <createProject></createProject>
+          <createProject />
         </v-list-group>
       </v-list>
       <v-spacer />

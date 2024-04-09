@@ -1,4 +1,4 @@
-import { $axios } from '@nuxtjs/axios';
+import { $axios } from '@nuxtjs/axios'
 
 class MyCustomUploadAdapterPlugin {
   constructor (loader, uploadUrl) {
