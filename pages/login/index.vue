@@ -1,5 +1,5 @@
 <template>
-    <v-layout fill-height color="primary">
+  <v-layout fill-height color="primary">
     <v-sheet width="100%" height="100%" class="d-flex align-center justify-center" color="primary">
       <v-card outlined width="30%" class="d-block justify-center align-center rounded-xl pa-8" shaped>
         <v-layout column justify-center align-center class="">
@@ -7,14 +7,14 @@
             Sign In
           </h1>
         </v-layout>
-  
+
         <v-card-text>
           <v-form v-model="valid" @submit.prevent="login()">
             <v-text-field
               v-model="form.username"
               class="rounded-xl"
               color="black"
-             
+
               prepend-inner-icon="mdi-account"
               placeholder="Username"
               :rules="[$rules.required]"
@@ -23,7 +23,7 @@
               v-model="form.password"
               class="rounded-xl"
               color="black"
-             
+
               prepend-inner-icon="mdi-lock"
               placeholder="Password"
               :rules="[$rules.required]"
@@ -62,39 +62,35 @@
         </v-card-text>
       </v-card>
     </v-sheet>
-    </v-layout>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Login',
-    data () {
-      return {
-        valid: false,
-        form: {
-          username: undefined,
-          password: undefined
-        },
-        loading: false,
-        showPassword: false
-      }
-    },
-    methods: {
-      async login () {
-        try {
-          const res = await this.$axios.post('auth/login', this.form)
+  </v-layout>
+</template>
+
+<script>
+export default {
+  name: 'Login',
+  data () {
+    return {
+      valid: false,
+      form: {
+        username: undefined,
+        password: undefined
+      },
+      loading: false,
+      showPassword: false
+    }
+  },
+  methods: {
+    async login () {
+      try {
+        const res = await this.$axios.post('auth/login', this.form)
         await this.$auth.setToken('local', 'Bearer ' + res.data.token)
-        await this.$auth.setUser(res.data)
-          
-        } catch (err) {
-  
-        } finally {
-          console.log(this.$auth)
-        }
+        await this.$auth.setUser(res.data.user)
+      } catch (err) {
+
       }
     }
   }
-  </script>
+}
+</script>
   <style scoped>
   </style>
-  

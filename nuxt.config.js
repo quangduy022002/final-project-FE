@@ -37,7 +37,7 @@ export default {
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
     // https://go.nuxtjs.dev/vuetify
-    '@nuxtjs/vuetify',
+    '@nuxtjs/vuetify'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -54,14 +54,16 @@ export default {
             propertyName: 'data.token'
           },
           tokenRequired: true,
-          logout: false
+          logout: false,
+          user: { url: '/users/detail/information', method: 'get', propertyName: false }
         }
       },
+
       redirect: {
         login: '/login',
         logout: '/login',
         home: false
-      },
+      }
     }
   },
   axios: {
@@ -77,9 +79,9 @@ export default {
       dark: false,
       themes: {
         light: {
-          primary: "#BB5A5A",
-          secondary: "#E79E85",
-          accent: "#3f51b5",
+          primary: '#BB5A5A',
+          secondary: '#E79E85',
+          accent: '#3f51b5',
           error: colors.deepOrange.accent4,
           warning: colors.amber.base,
           info: colors.teal.darken1,
