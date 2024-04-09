@@ -1,69 +1,67 @@
 <!-- eslint-disable vue/no-v-text-v-html-on-component -->
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <v-form style="position: relative">
-    <v-autocomplete
-      v-model="selectedList"
-      :search-input.sync="search"
-      :disabled="isUpdating"
-      :items="data"
-      filled
-      chips
-      label="Email"
-      item-text="email"
-      item-value="email"
-      multiple
-      solo
-      outlined
-      flat
-      class="rounded-lg"
-      :menu-props="{
-        maxHeight: 180, minWidth: '26.5%', nudgeBottom: '6px', nudgeRight: '16px',
-        rounded: 'lg',
+  <v-autocomplete
+    v-model="selectedList"
+    :search-input.sync="search"
+    :disabled="isUpdating"
+    :items="userList"
+    filled
+    chips
+    label="Email"
+    item-text="email"
+    item-value="email"
+    multiple
+    solo
+    outlined
+    flat
+    class="rounded-lg"
+    :menu-props="{
+      maxHeight: 180, minWidth: '26.7%', nudgeBottom: '6px', nudgeRight: '16px',
+      rounded: 'lg',
 
-      }"
-      :no-data-text="($vuetify.noDataText = 'Not found user')"
-      placeholder="Search the email"
-    >
-      <template #selection="data">
-        <v-chip
-          v-bind="data.attrs"
-          :input-value="data.selected"
-          class="mt-2"
-          close
-          @click="data.select"
-          @click:close="remove(data.item)"
-        >
-          <v-avatar size="10" left color="red">
-            <img v-if="data.item?.avatar" :src="data.item.avatar">
-            <span v-else class="black--text" style="font-size: 12px;">{{ data.item.firstName.slice(0, 1) +
-              data.item.lastName.slice(0, 1) }}</span>
-          </v-avatar>
-          <p class="mb-0 font-weight-regular" style="font-size: 14px;">
-            {{ data.item.email }}
-          </p>
-        </v-chip>
-      </template>
-      <template #item="data">
-        <v-list-item-avatar class="mr-2">
+    }"
+    :no-data-text="($vuetify.noDataText = 'Not found user')"
+    placeholder="Search the email"
+  >
+    <template #selection="data">
+      <v-chip
+        v-bind="data.attrs"
+        :input-value="data.selected"
+        class="mt-2"
+        close
+        @click="data.select"
+        @click:close="remove(data.item)"
+      >
+        <v-avatar size="10" left color="red">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
-          <v-avatar size="32" color="red">
-            <img v-if="data.item?.avatar" :src="data.item.avatar">
-            <span v-else class="black--text text-subtitle-2 font-weight-regular">{{
-              data.item.firstName.slice(0, 1) +
-                data.item.lastName.slice(0, 1) }}</span>
-          </v-avatar>
-        </v-list-item-avatar>
-        <v-list-item-content>
-          <v-list-item-title
-            class=" font-weight-regular"
-            style="font-size: 14px;"
-            v-html="emphasizeMatchWord(data.item.email)"
-          />
-        </v-list-item-content>
-      </template>
-    </v-autocomplete>
-  </v-form>
+          <span v-else class="black--text" style="font-size: 12px;">{{ data.item.firstName.slice(0, 1) +
+            data.item.lastName.slice(0, 1) }}</span>
+        </v-avatar>
+        <p class="mb-0 font-weight-regular" style="font-size: 14px;">
+          {{ data.item.email }}
+        </p>
+      </v-chip>
+    </template>
+    <template #item="data">
+      <v-list-item-avatar class="mr-2">
+        <img v-if="data.item?.avatar" :src="data.item.avatar">
+        <v-avatar size="32" color="red">
+          <img v-if="data.item?.avatar" :src="data.item.avatar">
+          <span v-else class="black--text text-subtitle-2 font-weight-regular">{{
+            data.item.firstName.slice(0, 1) +
+              data.item.lastName.slice(0, 1) }}</span>
+        </v-avatar>
+      </v-list-item-avatar>
+      <v-list-item-content>
+        <v-list-item-title
+          class=" font-weight-regular"
+          style="font-size: 14px;"
+          v-html="emphasizeMatchWord(data.item.email)"
+        />
+      </v-list-item-content>
+    </template>
+  </v-autocomplete>
 </template>
 
 <script>
@@ -75,7 +73,7 @@ export default {
       type: String,
       default: undefined
     },
-    data: {
+    userList: {
       type: Array,
       default: () => []
     },
@@ -143,5 +141,8 @@ font-size: 14px;
 
 .theme--light.v-text-field--outline>.v-input__control>.v-input__slot {
 border: 1px solid red !important;
+}
+.v-list {
+  padding: 0
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
-  <v-sheet>
+  <v-layout column>
     <navbar-project v-model="drawer" />
     <v-app-bar elevation="1" color="white">
       <v-toolbar-title class="text-h3">
-        {{ title }}
+        {{ project.name }}
         <v-icon size="40" class="mb-2">
           mdi-star-outline
         </v-icon>
@@ -23,23 +23,25 @@
 
       <v-tabs-items v-model="tab">
         <v-tab-item>
-          <overview />
+          <overview :project="project" />
         </v-tab-item>
         <v-tab-item>
-          <list-section />
+          <div>
+            123
+          </div>
         </v-tab-item>
         <v-tab-item>
           <board />
         </v-tab-item>
       </v-tabs-items>
     </v-sheet>
-  </v-sheet>
+  </v-layout>
 </template>
 <script>
 export default {
   data () {
     return {
-      title: 'Project 1',
+      project: {},
       tab: null,
       items: [
         { tab: 'Overview', content: 'Tab 1 Content', icon: 'mdi-text-box-edit-outline' },
@@ -49,8 +51,14 @@ export default {
       ]
     }
   },
+  async created () {
+    await this.getProjectDetail()
+  },
   methods: {
-
+    async getProjectDetail () {
+      const { data } = await this.$axios.get(`projects/projectDetail/${this.$route.params.slug}`)
+      this.project = data
+    }
   }
 }
 </script>

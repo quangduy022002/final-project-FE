@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <v-navigation-drawer
     v-model="value"
@@ -60,7 +61,7 @@
 
 <script>
 export default {
-  name: 'Drawer',
+  name: 'DrawerIndex',
   props: {
     value: {
       type: Boolean,
