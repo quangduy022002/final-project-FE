@@ -33,9 +33,9 @@
         @click="data.select"
         @click:close="remove(data.item)"
       >
-        <v-avatar size="10" left color="red">
+        <v-avatar size="10" left :color="randomColor">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
-          <span v-else class="black--text" style="font-size: 12px;">{{ data.item.firstName.slice(0, 1) +
+          <span v-else class="black--text text-uppercase font-weight-medium " style="font-size: 12px;">{{ data.item.firstName.slice(0, 1) +
             data.item.lastName.slice(0, 1) }}</span>
         </v-avatar>
         <p class="mb-0 font-weight-regular" style="font-size: 14px;">
@@ -46,9 +46,9 @@
     <template #item="data">
       <v-list-item-avatar class="mr-2">
         <img v-if="data.item?.avatar" :src="data.item.avatar">
-        <v-avatar size="32" color="red">
+        <v-avatar size="32" :color="randomColor">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
-          <span v-else class="black--text text-subtitle-2 font-weight-regular">{{
+          <span v-else class="black--text text-subtitle-2 font-weight-medium text-uppercase">{{
             data.item.firstName.slice(0, 1) +
               data.item.lastName.slice(0, 1) }}</span>
         </v-avatar>
@@ -65,6 +65,7 @@
 </template>
 
 <script>
+import { generateRandomColor } from './../utils/randomColor'
 
 export default {
   name: 'SelectEmail',
@@ -91,7 +92,8 @@ export default {
       list: [],
       selectedList: [],
       isUpdating: false,
-      search: ''
+      search: '',
+      randomColor: ''
     }
   },
   watch: {
@@ -107,6 +109,9 @@ export default {
         setTimeout(() => (this.isUpdating = false), 3000)
       }
     }
+  },
+  created () {
+    this.randomColor = generateRandomColor()
   },
   methods: {
     emphasizeMatchWord (name) {

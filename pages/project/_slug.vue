@@ -3,7 +3,7 @@
     <navbar-project v-model="drawer" />
     <v-app-bar elevation="1" color="white">
       <v-toolbar-title class="text-h3">
-        {{ project.name }}
+        {{ projectDetail.name }}
         <v-icon size="40" class="mb-2">
           mdi-star-outline
         </v-icon>
@@ -23,7 +23,7 @@
 
       <v-tabs-items v-model="tab">
         <v-tab-item>
-          <overview :project="project" />
+          <overview :project="projectDetail" />
         </v-tab-item>
         <v-tab-item>
           <div>
@@ -38,10 +38,10 @@
   </v-layout>
 </template>
 <script>
+import { mapState } from 'vuex'
 export default {
   data () {
     return {
-      project: {},
       tab: null,
       items: [
         { tab: 'Overview', content: 'Tab 1 Content', icon: 'mdi-text-box-edit-outline' },
@@ -51,13 +51,17 @@ export default {
       ]
     }
   },
+  computed: {
+    ...mapState('project', ['projectDetail'])
+  },
   async created () {
     await this.getProjectDetail()
   },
   methods: {
     async getProjectDetail () {
       const { data } = await this.$axios.get(`projects/projectDetail/${this.$route.params.slug}`)
-      this.project = data
+      // this.project = data
+      this.$store.commit('project/setProjectDetail', data)
     }
   }
 }

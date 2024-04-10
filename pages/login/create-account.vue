@@ -133,7 +133,6 @@ export default {
   methods: {
     async signUp () {
       try {
-        console.log(this.form)
         const res = await this.$axios.post('auth/createUser', this.form)
         await this.$auth.setToken('local', 'Bearer ' + res.data.token)
         await this.$auth.setUser(res.data)

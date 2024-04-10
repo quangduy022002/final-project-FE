@@ -51,7 +51,10 @@
         <h3 class="font-weight-medium mb-2">
           Project description
         </h3>
-        <p>{{ project.description }}</p>
+        <ck-editor v-if="permission" :value="project.description" @input="updateDescription" />
+        <p v-else>
+          {{ project.description }}
+        </p>
       </div>
       <div>
         <h3 class="font-weight-medium mb-2">
@@ -85,6 +88,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   name: 'OverviewIndex',
   props: {
@@ -97,16 +101,21 @@ export default {
     return {
       disabled: true,
       emailList: [],
-      userList: [
-
-      ],
-      message: ''
+      message: '',
+      permission: false
     }
+  },
+  computed: {
+    ...mapState('user', ['userList'])
   },
   async created () {
     await this.getUserList()
+    this.checkPermission()
   },
   methods: {
+    updateDescription (newValue) {
+      this.$emit('update:description', newValue)
+    },
     handleDisabled (payload) {
       this.disabled = payload
     },
@@ -117,7 +126,7 @@ export default {
       try {
         const { data } = await this.$axios.get('users/getAll')
 
-        this.userList = data
+        this.$store.commit('user/setUserList', data)
       } catch (error) {
       }
     },
@@ -131,6 +140,13 @@ export default {
           })
         })
       )
+    },
+    checkPermission () {
+      if (this.$auth.$state.user.id === this.project.createdBy.id) {
+        this.permission = true
+      } else {
+        this.permission = false
+      }
     }
   }
 }
