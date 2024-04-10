@@ -72,7 +72,7 @@
                 :loading="loading.updateDsc"
                 @click="updateProject"
               >
-                Send
+                Update
               </v-btn>
             </div>
           </div>
@@ -145,9 +145,6 @@ export default {
     this.checkPermission()
   },
   methods: {
-    updateDescription (newValue) {
-      this.$emit('update:description', newValue)
-    },
     handleDisabled (payload) {
       this.disabled = payload
     },
@@ -174,6 +171,7 @@ export default {
             })
           })
         )
+        this.message = ''
         this.$refs.dialogAddMember.dialog = false
       } catch (error) {
       } finally {
