@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-template-shadow -->
 <template>
   <div>
     <v-layout class="my-2">

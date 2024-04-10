@@ -1,3 +1,4 @@
+/* eslint-disable import/named */
 import { $axios } from '@nuxtjs/axios'
 
 class MyCustomUploadAdapterPlugin {

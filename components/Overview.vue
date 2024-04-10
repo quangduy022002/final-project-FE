@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-html -->
 <template>
   <div>
     <dialog-common ref="dialogAddMember" @click="$refs.dialogAddMember.dialog = false">
@@ -28,16 +29,17 @@
       <template #footer>
         <v-card flat>
           <div class="d-flex align-center justify-end" style="gap: 10px">
-            <v-btn outlined class="text-none" @click="$refs.dialogAddMember.dialog = false">
+            <v-btn outlined :loading="loading.sendInvite" class="text-none rounded-lg" @click="$refs.dialogAddMember.dialog = false">
               Cancel
             </v-btn>
             <v-btn
               type="button"
               background-color="primary"
               color="primary"
-              class="text-none"
+              class="text-none rounded-lg"
               :disabled="disabled"
               depressed
+              :loading="loading.sendInvite"
               @click="sendInvite"
             >
               Send
@@ -51,10 +53,31 @@
         <h3 class="font-weight-medium mb-2">
           Project description
         </h3>
-        <ck-editor v-if="permission" :value="project.description" @input="updateDescription" />
-        <p v-else>
-          {{ project.description }}
-        </p>
+        <v-card v-if="permission" flat>
+          <v-card v-if="!displayCkeditor" flat style="border: 1px solid" class="rounded-lg pa-4" @click="handleDisplay(true)">
+            <p class="mb-0" v-html="projectDetail.description" />
+          </v-card>
+          <div v-else>
+            <ck-editor v-model="projectDetail.description" />
+            <div class="d-flex align-center mt-2 justify-end" style="gap: 10px">
+              <v-btn outlined class="text-none rounded-lg" :loading="loading.updateDsc" @click="handleDisplay(false)">
+                Cancel
+              </v-btn>
+              <v-btn
+                type="button"
+                background-color="primary"
+                color="primary"
+                class="text-none rounded-lg"
+                depressed
+                :loading="loading.updateDsc"
+                @click="updateProject"
+              >
+                Send
+              </v-btn>
+            </div>
+          </div>
+        </v-card>
+        <p v-else class="mb-0" v-html="project.description" />
       </div>
       <div>
         <h3 class="font-weight-medium mb-2">
@@ -63,13 +86,13 @@
         <v-layout class="align-center flex-wrap" style="gap: 100px">
           <v-card flat>
             <v-btn
-              class="d-flex align-center pl-2 py-6 pr-6 justify-start"
+              class="d-flex align-center pl-2 py-8 pr-6 justify-start"
               color="transparent"
               elevation
               @click="$refs.dialogAddMember.dialog = true"
             >
               <v-card flat class="pa-2" style="border: 1px dashed grey; border-radius: 50%">
-                <v-icon small color="grey">
+                <v-icon size="21" color="grey">
                   mdi-plus
                 </v-icon>
               </v-card>
@@ -79,7 +102,7 @@
             </v-btn>
           </v-card>
           <div v-for="user in project.teamUsers" :key="user.id">
-            <card-member :user="user" />
+            <card-member :user="user" :permission="permission" />
           </div>
         </v-layout>
       </div>
@@ -102,11 +125,20 @@ export default {
       disabled: true,
       emailList: [],
       message: '',
-      permission: false
+      permission: false,
+      loading: {
+        sendInvite: false,
+        updateDsc: false
+      },
+      displayCkeditor: false
     }
   },
   computed: {
-    ...mapState('user', ['userList'])
+    ...mapState('user', ['userList']),
+
+    projectDetail () {
+      return { ...this.project }
+    }
   },
   async created () {
     await this.getUserList()
@@ -131,15 +163,22 @@ export default {
       }
     },
     async sendInvite () {
-      await Promise.all(
-        this.emailList.forEach(async (email) => {
-          await this.$axios.post('projects/sendInviteUser', {
-            projectId: this.project.id,
-            email,
-            message: this.message
+      this.loading.sendInvite = true
+      try {
+        await Promise.all(
+          this.emailList.map(async (email) => {
+            await this.$axios.post('projects/sendInviteUser', {
+              projectId: this.project.id,
+              email,
+              message: this.message
+            })
           })
-        })
-      )
+        )
+        this.$refs.dialogAddMember.dialog = false
+      } catch (error) {
+      } finally {
+        this.loading.sendInvite = false
+      }
     },
     checkPermission () {
       if (this.$auth.$state.user.id === this.project.createdBy.id) {
@@ -147,6 +186,25 @@ export default {
       } else {
         this.permission = false
       }
+    },
+    async updateProject () {
+      this.loading.updateDsc = true
+      try {
+        const convertTeamUsers = this.projectDetail.teamUsers.map(user => user.id)
+        const { data } = await this.$axios.patch(`projects/update/${this.project.id}`, {
+          ...this.project,
+          description: this.projectDetail.description,
+          teamUsers: convertTeamUsers
+        })
+        this.$store.commit('project/setProjectDetail', data)
+        this.displayCkeditor = false
+      } catch (error) {
+      } finally {
+        this.loading.updateDsc = false
+      }
+    },
+    handleDisplay (payload) {
+      this.displayCkeditor = payload
     }
   }
 }
@@ -157,5 +215,8 @@ export default {
   .v-text-field__slot {
     font-size: 14px !important;
   }
+}
+.v-btn:before {
+  background-color: gray !important;
 }
 </style>
