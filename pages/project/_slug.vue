@@ -94,23 +94,12 @@ export default {
       drawer: false,
       title: 'Project 1',
       icon: '',
-      sections: [
-        {
-          id: 0,
-          title: 'Section title',
-          tasks: [
-            {
-              title: 'Task title',
-              complete: false,
-              assign: []
-            }
-          ]
-        }
-      ]
+      sections: []
     }
   },
   methods: {
     addSection () {
+      this.$axios.post('/sections/create', defaultSections.title)
       const newSection = JSON.parse(JSON.stringify(defaultSections))
       newSection.id = this.sections.length
       this.sections.push(newSection)
@@ -118,6 +107,11 @@ export default {
     addTask (indexSection) {
       const newTask = JSON.parse(JSON.stringify(defaultTask))
       this.sections[indexSection].tasks.push(newTask)
+    },
+    updateSection ({ id, title }) {
+      this.$axios.patch(`/sections/update/${id}`, {
+        title
+      })
     }
   }
 }
