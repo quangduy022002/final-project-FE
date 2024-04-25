@@ -92,9 +92,11 @@
               </v-btn>
               <p class="black--text">
                 Already have account?
-                <a to="/Login">
-                  Login
-                </a>
+                <nuxt-link to="/login">
+                  <a>
+                    Login
+                  </a>
+                </nuxt-link>
               </p>
             </v-layout>
           </v-form>

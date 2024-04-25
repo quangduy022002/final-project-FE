@@ -31,7 +31,7 @@
           </div>
         </v-tab-item>
         <v-tab-item>
-          <board />
+          <board v-model="drawer" />
         </v-tab-item>
       </v-tabs-items>
     </v-sheet>
@@ -42,7 +42,7 @@ import { mapState } from 'vuex'
 export default {
   data () {
     return {
-      tab: null,
+      drawer: false,
       items: [
         { tab: 'Overview', content: 'Tab 1 Content', icon: 'mdi-text-box-edit-outline' },
         { tab: 'List', content: 'Tab 2 Content', icon: 'mdi-list-box-outline' },
@@ -52,7 +52,16 @@ export default {
     }
   },
   computed: {
-    ...mapState('project', ['projectDetail'])
+    ...mapState('project', ['projectDetail']),
+    tab: {
+      get () {
+        return Number(this.$route.query?.tab) || 0
+      },
+      set (val) {
+        console.log(val)
+        this.$router.replace({ query: { tab: val } })
+      }
+    }
   },
   async created () {
     await this.getProjectDetail()

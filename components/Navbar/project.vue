@@ -7,11 +7,6 @@
     width="35%"
   >
     <v-card class="fill-height" flat>
-      <v-layout justify-end align-center class="ma-4">
-        <v-icon size="40">
-          mdi-exit-to-app
-        </v-icon>
-      </v-layout>
       <v-card-title content-editable class="text-h3 mx-4">
         Task Title
       </v-card-title>
