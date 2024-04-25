@@ -47,6 +47,7 @@
 
 <script>
 export default {
+  name: 'ProjectIndex',
   props: {
     value: {
       type: Boolean,

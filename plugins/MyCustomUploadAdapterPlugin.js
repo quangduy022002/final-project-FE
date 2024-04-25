@@ -1,4 +1,5 @@
-import { $axios } from '@nuxtjs/axios';
+/* eslint-disable import/named */
+import { $axios } from '@nuxtjs/axios'
 
 class MyCustomUploadAdapterPlugin {
   constructor (loader, uploadUrl) {
