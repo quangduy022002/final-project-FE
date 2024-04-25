@@ -1,43 +1,48 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
   <v-navigation-drawer
-    v-model="value"
-    color="primary"
+    :mini-variant.sync="mini"
     fixed
+    height="100%"
     app
     permanent
+    hide-overlay
+    :temporary="!mini"
+    :width="$vuetify.breakpoint.smAndDown ? '100%' : ''"
   >
     <v-layout column fill-height>
+      <div class="text-h2 ml-4 mt-4 white--text d-flex" @click.stop="mini = !mini">
+        <v-icon class="mr-4">
+          mdi-text
+        </v-icon>
+      </div>
       <v-list>
         <v-list-item v-for="item in items" :key="item.title" :to="item.to">
           <v-list-item-icon>
-            <v-icon color="white">
+            <v-icon>
               {{ item.icon }}
             </v-icon>
           </v-list-item-icon>
 
-          <v-list-item-title class="white--text">
+          <v-list-item-title>
             {{ item.title }}
           </v-list-item-title>
         </v-list-item>
 
-        <v-list-group
-          color="white"
-        >
+        <v-list-group :value="!mini">
           <template #prependIcon>
-            <v-icon color="white">
+            <v-icon>
               {{ project.icon }}
             </v-icon>
           </template>
           <template #activator>
-            <v-list-item-title class="white--text">
+            <v-list-item-title>
               {{ project.title }}
             </v-list-item-title>
           </template>
           <v-list-item
             v-for="projectItem in project.items"
             :key="projectItem.id "
-            class="white--text"
             :to="`/project/${projectItem.id}`"
           >
             <v-list-item-title>{{ projectItem.name }}</v-list-item-title>
@@ -89,11 +94,7 @@ export default {
     project: {
       icon: 'mdi-view-grid-outline',
       title: 'Project',
-      items: [
-        { title: 'Project 1', id: 0 },
-        { title: 'Project 2', id: 1 },
-        { title: 'Project 3', id: 2 }
-      ]
+      items: []
     },
     itemsBottom: [{
       title: 'Setting',
@@ -112,6 +113,14 @@ export default {
     this.project.items = res.data
   },
   computed: {
+    mini: {
+      get () {
+        return this.value
+      },
+      set (val) {
+        this.$emit('input', val)
+      }
+    }
   },
   methods: {
     createProject () {

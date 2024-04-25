@@ -85,6 +85,8 @@ export default {
         const res = await this.$axios.post('auth/login', this.form)
         await this.$auth.setToken('local', 'Bearer ' + res.data.token)
         await this.$auth.setUser(res.data.user)
+        await this.$axios.setHeader('Authorization', 'Bearer ' + res.data.token)
+        await this.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + res.data.token)
       } catch (err) {
 
       }

@@ -7,7 +7,6 @@
     <template #activator="{ on, attrs }">
       <v-btn
         depressed
-        color="primary"
         width="100%"
         v-bind="attrs"
         v-on="on"
@@ -50,7 +49,8 @@ export default {
         name: '',
         category: '',
         description: '',
-        teamUsers: []
+        teamUsers: [],
+        sections: []
       }
     }
   },

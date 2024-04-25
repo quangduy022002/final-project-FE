@@ -3,9 +3,9 @@
   <div>
     <dialog-common ref="dialogAddMember" @click="$refs.dialogAddMember.dialog = false">
       <template #header>
-        <p class="mb-0 text-subtitle-1 font-weight-medium">
+        <h2>
           Invite with email
-        </p>
+        </h2>
       </template>
       <template #content>
         <div class="mt-2">
