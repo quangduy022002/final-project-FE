@@ -112,6 +112,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { Alert } from '~/store/alerts'
 export default {
   name: 'OverviewIndex',
   props: {
@@ -164,7 +165,16 @@ export default {
         )
         this.message = ''
         this.$refs.dialogAddMember.dialog = false
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'success',
+          icon: 'check',
+          message: 'Success'
+        }))
       } catch (error) {
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'error',
+          message: error?.response?.data?.message
+        }))
       } finally {
         this.loading.sendInvite = false
       }
@@ -173,14 +183,25 @@ export default {
       this.loading.updateDsc = true
       try {
         const convertTeamUsers = this.projectDetail.teamUsers.map(user => user.id)
+        const sections = this.projectDetail.sections.map(section => section.id)
         const { data } = await this.$axios.patch(`projects/update/${this.project.id}`, {
           ...this.project,
           description: this.projectDetail.description,
-          teamUsers: convertTeamUsers
+          teamUsers: convertTeamUsers,
+          sections
         })
         this.$store.commit('project/setProjectDetail', data)
         this.displayCkeditor = false
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'success',
+          icon: 'check',
+          message: 'Success'
+        }))
       } catch (error) {
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'error',
+          message: error?.response?.data?.message
+        }))
       } finally {
         this.loading.updateDsc = false
       }
