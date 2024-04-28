@@ -35,7 +35,7 @@
         @click="data.select"
         @click:close="remove(data.item)"
       >
-        <v-avatar size="10" left :color="randomColor">
+        <v-avatar size="10" left :color="data.item.color">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
           <span v-else class="black--text text-uppercase font-weight-medium " style="font-size: 12px;">{{ data.item?.firstName?.slice(0, 1) +
             data.item?.lastName?.slice(0, 1) }}</span>
@@ -48,7 +48,7 @@
     <template #item="data">
       <v-list-item-avatar class="mr-2">
         <img v-if="data.item?.avatar" :src="data.item.avatar">
-        <v-avatar size="32" :color="randomColor">
+        <v-avatar size="32" :color="data.item.color">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
           <span v-else class="black--text text-subtitle-2 font-weight-medium text-uppercase">{{
             data.item?.firstName?.slice(0, 1) +
@@ -67,7 +67,6 @@
 </template>
 
 <script>
-import { generateRandomColor } from './../utils/randomColor'
 
 export default {
   name: 'SelectEmail',
@@ -98,8 +97,7 @@ export default {
       list: [],
       selectedList: [],
       isUpdating: false,
-      search: '',
-      randomColor: ''
+      search: ''
     }
   },
   watch: {
@@ -116,9 +114,6 @@ export default {
       }
     }
   },
-  created () {
-    this.randomColor = generateRandomColor()
-  },
   methods: {
     emphasizeMatchWord (name) {
       const regExp = new RegExp(this.search, 'i')
@@ -132,7 +127,7 @@ export default {
     remove (item) {
       let index
       if (typeof item === 'object') {
-        index = this.selectedList.findIndex(select => select.id === item.id)
+        index = this.selectedList.findIndex(select => select === item.email)
       } else {
         index = this.selectedList.indexOf(item.email)
       }

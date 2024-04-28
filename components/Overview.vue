@@ -118,6 +118,10 @@ export default {
     project: {
       type: Object,
       default: () => {}
+    },
+    permission: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -125,7 +129,6 @@ export default {
       disabled: true,
       emailList: [],
       message: '',
-      permission: false,
       loading: {
         sendInvite: false,
         updateDsc: false

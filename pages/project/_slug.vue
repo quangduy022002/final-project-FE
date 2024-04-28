@@ -22,7 +22,7 @@
 
       <v-tabs-items v-model="tab">
         <v-tab-item>
-          <overview :project="projectDetail" />
+          <overview :project="projectDetail" :permission="permission" />
         </v-tab-item>
         <v-tab-item>
           <div>
@@ -47,7 +47,8 @@ export default {
         { tab: 'List', content: 'Tab 2 Content', icon: 'mdi-list-box-outline' },
         { tab: 'Board', content: 'Tab 3 Content', icon: 'mdi-bulletin-board' },
         { tab: 'Timeline', content: 'Tab 4 Content', icon: 'mdi-calendar-month-outline' }
-      ]
+      ],
+      permission: false
     }
   },
   computed: {

@@ -32,7 +32,7 @@
               @click:append="showPassword = !showPassword"
             />
             <v-layout justify-space-between align-center class="mb-6 accent--text">
-              <v-btn to="/ForgotPassword" plain class="ma-0 pa-0 accent--text">
+              <v-btn to="/ForgotPassword" plain class="ma-0 pa-0 gray--text">
                 Forgot password
               </v-btn>
             </v-layout>

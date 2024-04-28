@@ -66,7 +66,7 @@
         </v-card>
         <div v-else>
           <v-layout align-center @click="$refs.dialogAddMember.dialog = true">
-            <v-avatar v-for="(user, index) in task.teamUsers" :key="user.id" size="34" :color="randomColor()" :class="{'mr-n3': index < (task.teamUsers.length - 1)}">
+            <v-avatar v-for="(user, index) in task.teamUsers" :key="user.id" size="34" :color="user.color" :class="{'mr-n3': index < (task.teamUsers.length - 1)}">
               <img v-if="user.avatar" :src="user.avatar" alt="avatar">
               <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ user.firstName.slice(0, 1) +
                 user.lastName.slice(0, 1) }}</span>
@@ -193,7 +193,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import { generateRandomColor } from '~/utils/randomColor'
 import { Alert } from '~/store/alerts'
 
 export default {
@@ -280,10 +279,6 @@ export default {
     }
   },
   methods: {
-    randomColor () {
-      const color = generateRandomColor()
-      return color
-    },
     getFormEditTask (task) {
       const form = JSON.parse(JSON.stringify(task))
       delete form.id

@@ -1,7 +1,7 @@
 <template>
   <v-card v-if="!permission" flat>
     <div class="d-flex align-center">
-      <v-avatar max-height="38" max-width="38" :color="randomColor">
+      <v-avatar max-height="38" max-width="38" :color="$auth.user.color">
         <img v-if="user.avatar" :src="user.avatar" alt="avatar">
         <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ user.firstName.slice(0, 1) +
           user.lastName.slice(0, 1) }}</span>
@@ -27,7 +27,7 @@
         v-on="on"
       >
         <div class="d-flex align-center">
-          <v-avatar max-height="38" max-width="38" :color="randomColor">
+          <v-avatar max-height="38" max-width="38" :color="$auth.user.color">
             <img v-if="user.avatar" :src="user.avatar" alt="avatar">
             <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ user.firstName.slice(0, 1) +
               user.lastName.slice(0, 1) }}</span>
@@ -57,7 +57,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import { generateRandomColor } from './../utils/randomColor'
 export default {
   name: 'CardMember',
   props: {
@@ -72,7 +71,6 @@ export default {
   },
   data () {
     return {
-      randomColor: '',
       selected: null
     }
   },
@@ -85,9 +83,6 @@ export default {
         await this.removeMemberProject()
       }
     }
-  },
-  created () {
-    this.randomColor = generateRandomColor()
   },
   methods: {
     async removeMemberProject () {
