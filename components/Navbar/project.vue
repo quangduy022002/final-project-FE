@@ -177,10 +177,10 @@
           Comments
         </div>
         <v-divider />
-        <v-layout class="mt-4">
-          <v-avatar max-height="38" max-width="38">
+        <v-layout class="mt-4" style="gap: 10px;">
+          <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
             <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
-            <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
+            <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
               $auth.user.lastName.slice(0, 1) }}</span>
           </v-avatar>
           <v-text-field hide-details outlined dense rounded class="mr-4" />
@@ -313,7 +313,7 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style scoped lang="scss">
 .ck-rounded-corners .ck.ck-editor__main>.ck-editor__editable, .ck.ck-editor__main>.ck-editor__editable.ck-rounded-corners {
     height: 200px;
 }
