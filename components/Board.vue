@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/no-template-shadow -->
 <template>
   <div>
-    <navbar-project ref="navTask" v-model="drawer" />
+    <navbar-project ref="navTask" v-model="drawer" @ />
     <dialog-common ref="dialogSection" @click="closeDialogSection">
       <template #header>
         <h2>{{ modeSection ==="add" ? 'Add section' : 'Edit Section' }}</h2>
@@ -81,7 +81,23 @@
                 {{ task.name }}
               </div>
             </v-card-title>
-            <v-layout justify-end>
+            <v-card-text>
+              <div v-if="task.priority" class="mb-2">
+                <v-chip
+                  small
+                  :color="getColorChip(task?.priority)"
+                >
+                  {{ task?.priority?.name }}
+                </v-chip>
+              </div>
+              <div v-if="task.deadline.length">
+                <v-chip :color="getDateDeadlineColor(task.deadline)" small :outlined="getDateDeadlineColor(task.deadline) === 'error'">
+                  {{ getDateDeadline(task.deadline) }}
+                </v-chip>
+              </div>
+            </v-card-text>
+            <v-layout>
+              <v-spacer />
               <v-btn v-if="!task.teamUsers.length" icon class="mr-2">
                 <v-icon>mdi-account-multiple-plus-outline</v-icon>
               </v-btn>
@@ -106,6 +122,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 import draggable from 'vuedraggable'
 import { mapFields } from 'vuex-map-fields'
 import { mapState } from 'vuex'
@@ -185,6 +202,27 @@ export default {
     }
   },
   methods: {
+    getColorChip (priority) {
+      if (priority?.name === 'High') {
+        return 'error'
+      } else if (priority?.name === 'Medium') {
+        return 'warning'
+      } else {
+        return 'success'
+      }
+    },
+    getDateDeadline (date) {
+      return moment(date).fromNow()
+    },
+    getDateDeadlineColor (date) {
+      const currentDate = moment()
+      const inputDate = moment(date)
+      if (inputDate.isSameOrAfter(currentDate)) {
+        return ''
+      } else {
+        return 'error'
+      }
+    },
     async changePosition (action, section) {
       if (action?.added) {
         const formTask = this.getFormEditTask(action?.added.element)
@@ -206,7 +244,7 @@ export default {
       }))
     },
     selectTask (task) {
-      this.$refs.navTask.task = JSON.parse(JSON.stringify(task))
+      this.$refs.navTask.task = task
       this.drawer = true
     },
     getFormEditTask (task) {

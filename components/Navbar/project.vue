@@ -93,15 +93,6 @@
           max-width="290"
         >
           <template #activator="{ on, attrs }">
-            <!-- <v-text-field
-              :value="computedDateFormattedMomentjs"
-              clearable
-              label="Formatted with Moment.js"
-              readonly
-              v-bind="attrs"
-              v-on="on"
-              @click:clear="date = null"
-            /> -->
             <v-card v-if="!task.deadline.length" flat>
               <v-btn
                 class="d-flex align-center pl-2 py-8 pr-6 justify-start"
