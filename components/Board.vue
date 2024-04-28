@@ -50,15 +50,15 @@
     </v-layout>
     <draggable v-model="sections" group="section" class="d-flex pa-4 overflow-y-auto fill-height" handle=".section-swap">
       <v-card v-for="(section) in sections" :key="section.id" width="381" class="mr-4" outlined>
-        <v-layout align-center>
-          <v-icon class="mx-2 section-swap">
+        <v-layout align-center class="mx-2">
+          <v-icon class="mr-2 section-swap">
             mdi-reorder-horizontal
           </v-icon>
           <h2>
             {{ section.title }}
           </h2>
           <v-spacer />
-          <v-icon>
+          <v-icon @click="openDialogTask(section, section.tasks)">
             mdi-plus
           </v-icon>
           <MenuCrud @click-edit="openDialogSection('edit', section)" />
@@ -224,6 +224,7 @@ export default {
       }
     },
     async changePosition (action, section) {
+      console.log(action)
       if (action?.added) {
         const formTask = this.getFormEditTask(action?.added.element)
         formTask.statusId = section.id
@@ -253,6 +254,9 @@ export default {
       delete form.comments
       delete form.createdBy
       delete form.project
+      if (form.priority) {
+        form.priorityId = form.priority.id
+      }
       form.teamUsers = form.teamUsers.map(user => user.id)
       form.estimateTime = form.time.estimateTime
       form.originalTime = form.time.originalTime
@@ -307,6 +311,7 @@ export default {
           message: 'Success'
         }))
       } catch (err) {
+        console.error(err)
         this.$store.commit('alerts/add', new Alert(this, {
           type: 'error',
           message: 'Duplicate Task'
