@@ -90,24 +90,34 @@ export default {
     fullWidth: {
       type: Boolean,
       default: false
+    },
+    selected: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
     return {
       list: [],
-      selectedList: [],
       isUpdating: false,
       search: ''
     }
   },
-  watch: {
-    selectedList (value) {
-      this.$emit('setDisabled', !value)
-      this.$emit('emailList', [...value])
-      if (value) {
-        this.search = ''
+  computed: {
+    selectedList: {
+      get () {
+        return this.selected || []
+      },
+      set (value) {
+        this.$emit('setDisabled', !value)
+        this.$emit('emailList', [...value])
+        if (value) {
+          this.search = ''
+        }
       }
-    },
+    }
+  },
+  watch: {
     isUpdating (val) {
       if (val) {
         setTimeout(() => (this.isUpdating = false), 3000)

@@ -65,6 +65,7 @@ export default {
   async created () {
     await this.getProjectDetail()
     await this.getUserList()
+    await this.getPriority()
     this.checkPermission()
   },
   methods: {
@@ -87,6 +88,10 @@ export default {
       const { data } = await this.$axios.get(`projects/projectDetail/${this.$route.params.slug}`)
       // this.project = data
       this.$store.commit('project/setProjectDetail', data)
+    },
+    async getPriority () {
+      const res = await this.$axios.get('/priorities/getAll')
+      this.$store.commit('project/setPriority', res.data)
     }
   }
 }

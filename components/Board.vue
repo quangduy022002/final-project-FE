@@ -82,9 +82,16 @@
               </div>
             </v-card-title>
             <v-layout justify-end>
-              <v-btn icon class="mr-2">
+              <v-btn v-if="!task.teamUsers.length" icon class="mr-2">
                 <v-icon>mdi-account-multiple-plus-outline</v-icon>
               </v-btn>
+              <v-layout v-else align-center justify-end class="mr-2">
+                <v-avatar v-for="(user, index) in task.teamUsers" :key="user.id" size="34" :color="user.color" :class="{'mr-n3': index < (task.teamUsers.length - 1)}">
+                  <img v-if="user.avatar" :src="user.avatar" alt="avatar">
+                  <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ user.firstName.slice(0, 1) +
+                    user.lastName.slice(0, 1) }}</span>
+                </v-avatar>
+              </v-layout>
             </v-layout>
           </v-card>
         </draggable>
@@ -271,7 +278,7 @@ export default {
       }
     },
     async editSection (id) {
-      const res = await this.$axios.patch(`/sections/update/${id}`, { title: this.sectionForm.title })
+      await this.$axios.patch(`/sections/update/${id}`, { title: this.sectionForm.title })
     },
     async handleSubmitSection () {
       try {

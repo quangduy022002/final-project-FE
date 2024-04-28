@@ -15,7 +15,7 @@
       <template #content>
         <div class="mt-2">
           <v-form ref="">
-            <select-email label="Email" :user-list="userList" :return-object="true" @emailList="getEmailList" />
+            <select-email label="Email" :user-list="userList" :selected="task.teamUsers" :return-object="true" @emailList="getEmailList" />
           </v-form>
         </div>
       </template>
@@ -31,7 +31,7 @@
               color="primary"
               class="text-none rounded-lg"
               depressed
-              @click="editTask"
+              @click="setEmailList()"
             >
               Save
             </v-btn>
@@ -75,8 +75,8 @@
               {{ `${task.teamUsers.length} members` }}
             </div>
             <div v-else class="ml-2">
-              {{ task.teamUsers[0].firstName.slice(0, 1) +
-                task.teamUsers[0].lastName.slice(0, 1) }}
+              {{ task.teamUsers[0].firstName +
+                task.teamUsers[0].lastName }}
             </div>
           </v-layout>
         </div>
@@ -158,18 +158,75 @@
           </v-btn>
         </v-menu>
       </div>
+      <div class="d-flex mx-4 align-center">
+        <h3 class="mr-6 font-weight-bold">
+          Priority
+        </h3>
+        <v-menu offset-y>
+          <template #activator="{ on, attrs }">
+            <v-card v-if="!task.priority" flat>
+              <v-btn
+                class="d-flex align-center pl-2 py-8 pr-6 justify-start"
+                color="transparent"
+                elevation
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-card class="pa-2" style="border: 1px dashed grey; border-radius: 50%">
+                  <v-icon size="14" color="grey">
+                    mdi-plus
+                  </v-icon>
+                </v-card>
+                <p class="mb-0 ml-2 text-subtitle-1 grey--text font-weight-medium text-none">
+                  Add priority
+                </p>
+              </v-btn>
+            </v-card>
+            <v-card v-else flat>
+              <!-- <v-btn
+                class="d-flex align-center pl-2 py-8 pr-6 justify-start"
+                color="transparent"
+                elevation
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon size="24" color="grey">
+                  mdi-calendar
+                </v-icon>
+
+                <p class="mb-0 ml-2 text-subtitle-1 grey--text font-weight-medium text-none">
+                  {{ task.deadline }}
+                </p>
+              </v-btn> -->
+              <v-chip
+                :color="getColorChip(task.priority)"
+                v-bind="attrs"
+                v-on="on"
+              >
+                {{ task.priority.name }}
+              </v-chip>
+            </v-card>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="(item) in priority"
+              :key="item.id"
+              @click="setPriority(item)"
+            >
+              <v-chip
+                :color="getColorChip(item)"
+              >
+                {{ item.name }}
+              </v-chip>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
       <div class="ma-4">
         <h3 class="font-weight-bold mb-4">
           Description
         </h3>
-        <v-textarea
-          solo
-          outlined
-          filled
-          hide-details
-          height="100%"
-          label="Description..."
-        />
+        <ck-editor v-model="task.description" />
       </div>
       <v-spacer />
       <div class="pa-4 justify-content-end">
@@ -193,8 +250,8 @@
 
 <script>
 import { mapState } from 'vuex'
+import { mapFields } from 'vuex-map-fields'
 import { Alert } from '~/store/alerts'
-
 export default {
   name: 'ProjectIndex',
   props: {
@@ -205,6 +262,7 @@ export default {
   },
   data () {
     return {
+      editEmail: [],
       menu: false,
       title: 'Project 1',
       icon: '',
@@ -264,6 +322,7 @@ export default {
   },
   computed: {
     ...mapState('user', ['userList']),
+    ...mapFields('project', ['projectDetail', 'priority']),
     drawer: {
       get () {
         return this.value
@@ -274,17 +333,42 @@ export default {
     }
   },
   watch: {
-    task () {
-      console.log(this.task)
+    task: {
+      deep: true,
+      handler (newVal, oldVal) {
+        const check = this.shallowCompare(newVal, oldVal)
+        if (newVal.id === oldVal.id && check) {
+          this.editTask()
+        }
+      }
     }
   },
   methods: {
+    setPriority (priority) {
+      this.task.priority = priority
+    },
+    getColorChip (priority) {
+      if (priority?.name === 'High') {
+        return 'error'
+      } else if (priority?.name === 'Medium') {
+        return 'warning'
+      } else {
+        return 'success'
+      }
+    },
+    shallowCompare (obj1, obj2) {
+      return Object.entries(obj1).every(([key, value]) => obj2[key] === value)
+    },
     getFormEditTask (task) {
       const form = JSON.parse(JSON.stringify(task))
       delete form.id
       delete form.comments
       delete form.createdBy
       delete form.project
+      if (form.priority) {
+        form.priorityId = form.priority.id
+      }
+
       form.teamUsers = form.teamUsers.map(user => user.id)
       form.estimateTime = form.time.estimateTime
       form.originalTime = form.time.originalTime
@@ -294,13 +378,14 @@ export default {
     async editTask () {
       try {
         const form = this.getFormEditTask(this.task)
-        res = await this.$axios.patch(`/tasks/update/${this.task.id}`, form)
+        await this.$axios.patch(`/tasks/update/${this.task.id}`, form)
         this.$store.commit('alerts/add', new Alert(this, {
           type: 'success',
           icon: 'check',
           message: 'Update success'
         }))
       } catch (err) {
+        console.error(err)
         this.$store.commit('alerts/add', new Alert(this, {
           type: 'error',
           message: err?.response?.data?.message
@@ -308,7 +393,10 @@ export default {
       }
     },
     getEmailList (payload) {
-      this.task.teamUsers = payload
+      this.editEmail = payload
+    },
+    setEmailList () {
+      this.task.teamUsers = this.editEmail
     }
   }
 }
@@ -316,5 +404,8 @@ export default {
 <style scoped lang="scss">
 .ck-rounded-corners .ck.ck-editor__main>.ck-editor__editable, .ck.ck-editor__main>.ck-editor__editable.ck-rounded-corners {
     height: 200px;
+}
+.select {
+  width: 60px;
 }
 </style>
