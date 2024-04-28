@@ -47,7 +47,7 @@
           >
             <v-list-item-title>{{ projectItem.name }}</v-list-item-title>
           </v-list-item>
-          <createProject />
+          <createProject @createProject="createProject"/>
         </v-list-group>
       </v-list>
       <v-spacer />
@@ -123,8 +123,8 @@ export default {
     }
   },
   methods: {
-    createProject () {
-
+    createProject (data) {
+      this.project.items.push(data)
     }
   }
 }

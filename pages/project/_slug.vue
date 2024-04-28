@@ -1,6 +1,5 @@
 <template>
   <v-layout column>
-    <navbar-project v-model="drawer" />
     <v-app-bar elevation="1" color="white">
       <v-toolbar-title class="text-h3">
         {{ projectDetail.name }}
@@ -58,15 +57,31 @@ export default {
         return Number(this.$route.query?.tab) || 0
       },
       set (val) {
-        console.log(val)
         this.$router.replace({ query: { tab: val } })
       }
     }
   },
   async created () {
     await this.getProjectDetail()
+    await this.getUserList()
+    this.checkPermission()
   },
   methods: {
+    async getUserList () {
+      try {
+        const { data } = await this.$axios.get('users/getAll')
+
+        this.$store.commit('user/setUserList', data)
+      } catch (error) {
+      }
+    },
+    checkPermission () {
+      if (this.$auth.$state.user.id === this.projectDetail.createdBy.id) {
+        this.permission = true
+      } else {
+        this.permission = false
+      }
+    },
     async getProjectDetail () {
       const { data } = await this.$axios.get(`projects/projectDetail/${this.$route.params.slug}`)
       // this.project = data

@@ -1,5 +1,5 @@
 export const state = () => ({
-  userList: {}
+  userList: []
 })
 
 export const getters = {

@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/no-template-shadow -->
 <template>
   <div>
+    <navbar-project ref="navTask" v-model="drawer" />
     <dialog-common ref="dialogSection" @click="closeDialogSection">
       <template #header>
         <h2>{{ modeSection ==="add" ? 'Add section' : 'Edit Section' }}</h2>
@@ -18,6 +19,24 @@
         </v-layout>
       </template>
     </dialog-common>
+    <dialog-common ref="dialogTask" @click="closeDialogTask">
+      <template #header>
+        <h2>Add Task</h2>
+      </template>
+      <template #content>
+        <v-form ref="taskForm" v-model="valid" class="mt-2" @submit.prevent="handleSubmitTask()">
+          <v-text-field v-model="taskForm.name" :rules="[$rules.required]" outlined label="Title" />
+          <select-email label="Invite with email" :user-list="userList" :return-object="true" @emailList="getEmailList" />
+        </v-form>
+      </template>
+      <template #footer>
+        <v-layout justify-end>
+          <v-btn type="submit" :disabled="!valid" @click="handleSubmitTask()">
+            Save
+          </v-btn>
+        </v-layout>
+      </template>
+    </dialog-common>
     <v-layout class="my-2 ml-4">
       <v-btn>
         <v-icon class="mr-1">
@@ -29,9 +48,12 @@
         + Add Section
       </v-btn>
     </v-layout>
-    <v-layout fill-height class="pa-4 overflow-y-auto">
-      <v-card v-for="(section, index) in sections" :key="section.id" min-width="381" flat class="mr-4">
+    <draggable v-model="sections" group="section" class="d-flex pa-4 overflow-y-auto fill-height" handle=".section-swap">
+      <v-card v-for="(section) in sections" :key="section.id" width="381" class="mr-4" outlined>
         <v-layout align-center>
+          <v-icon class="mx-2 section-swap">
+            mdi-reorder-horizontal
+          </v-icon>
           <h2>
             {{ section.title }}
           </h2>
@@ -41,13 +63,13 @@
           </v-icon>
           <MenuCrud @click-edit="openDialogSection('edit', section)" />
         </v-layout>
-        <draggable group="task" :list="section.tasks">
+        <draggable v-model="section.tasks" group="tasks" class="pa-2" @change="$event => changePosition($event, section)">
           <v-card
-            v-for="(task, index) in section.tasks"
-            :key="index"
+            v-for="(task) in section.tasks"
+            :key="task.id"
             class="mb-2"
-            color="secondary"
-            @click="drawer = true"
+            outlined
+            @click="selectTask(task)"
           >
             <v-card-title class="pa-2 text-h5">
               <v-btn icon>
@@ -56,7 +78,7 @@
                 </v-icon>
               </v-btn>
               <div>
-                {{ task.title }}
+                {{ task.name }}
               </div>
             </v-card-title>
             <v-layout justify-end>
@@ -67,56 +89,61 @@
           </v-card>
         </draggable>
         <v-layout justify-center align-center>
-          <v-btn plain @click="addTask(index)">
+          <v-btn plain @click="openDialogTask(section, section.tasks)">
             + Add task
           </v-btn>
         </v-layout>
       </v-card>
-    </v-layout>
+    </draggable>
   </div>
 </template>
 
 <script>
 import draggable from 'vuedraggable'
 import { mapFields } from 'vuex-map-fields'
-
+import { mapState } from 'vuex'
 import { Alert } from '~/store/alerts'
 
-const defaultSections = {
-  title: 'Section title',
-  tasks: [
-    {
-      title: 'Task title',
-      complete: false,
-      assign: []
-    }
-  ]
-}
 const defaultTask =
 {
-  title: 'Task title',
-  complete: false,
-  assign: []
+  name: 'Task title',
+  description: '',
+  statusId: 0,
+  typeId: 0,
+  priorityId: 0,
+  originalTime: 0,
+  estimateTime: 0,
+  teamUsers: [],
+  deadline: '',
+  projectId: ''
 }
 export default {
   name: 'BoardIndex',
   components: {
     draggable
   },
-  props: {
-    value: {
-      type: Boolean,
-      default: false
-    }
-  },
   data () {
     return {
+      drawer: false,
       valid: false,
       loading: false,
       icon: '',
       sectionForm: {
         id: undefined,
         title: undefined
+      },
+      taskForm: {
+        name: undefined,
+        description: '',
+        statusId: 0, // id section
+        typeId: 0,
+        priorityId: 0,
+        originalTime: 0,
+        estimateTime: 0,
+        teamUsers: [],
+        deadline: '',
+        projectId: '',
+        position: 0
       },
       modeSection: '',
       items: [{
@@ -131,27 +158,85 @@ export default {
   },
   computed: {
     ...mapFields('project', ['projectDetail']),
-    drawer: {
-      get () {
-        return this.value
-      },
-      set (val) {
-        this.$emit('input', val)
-      }
-    },
+    ...mapState('user', ['userList']),
     sections: {
       get () {
         return this.projectDetail?.sections?.length ? JSON.parse(JSON.stringify(this.projectDetail.sections)) : []
       },
-      set (val) {
+      async set (val) {
         this.$store.commit('project/setSections', val)
+        await this.updateProject()
+      }
+    },
+    tasks: {
+      get () {
+        return this.projectDetail?.tasks?.length ? JSON.parse(JSON.stringify(this.projectDetail.tasks)) : []
+      },
+      set (val) {
+        this.$store.commit('project/setTasks', val)
       }
     }
   },
   methods: {
+    async changePosition (action, section) {
+      if (action?.added) {
+        const formTask = this.getFormEditTask(action?.added.element)
+        formTask.statusId = section.id
+        await this.$axios.patch(`/tasks/update/${action?.added.element.id}`, formTask)
+      }
+      const sections = JSON.parse(JSON.stringify(this.sections))
+      const index = sections.findIndex(sectionOld => sectionOld.id === section.id)
+      sections.splice(index, 1, section)
+      this.sections = sections
+      const formSection = JSON.parse(JSON.stringify(section))
+      delete formSection.id
+      formSection.tasks = formSection.tasks.map(task => task.id)
+      await this.$axios.patch(`/sections/update/${section.id}`, formSection)
+      this.$store.commit('alerts/add', new Alert(this, {
+        type: 'success',
+        icon: 'check',
+        message: 'Update success'
+      }))
+    },
+    selectTask (task) {
+      this.$refs.navTask.task = JSON.parse(JSON.stringify(task))
+      this.drawer = true
+    },
+    getFormEditTask (task) {
+      const form = JSON.parse(JSON.stringify(task))
+      delete form.id
+      delete form.comments
+      delete form.createdBy
+      delete form.project
+      form.teamUsers = form.teamUsers.map(user => user.id)
+      form.estimateTime = form.time.estimateTime
+      form.originalTime = form.time.originalTime
+      form.statusId = form.status.id
+      return form
+    },
+    findTasksBySection (id) {
+      const tasks = this.tasks.filter(task => task.status.id === id)
+      const comparePosition = (a, b) => {
+        return a.position - b.position
+      }
+      tasks.sort(comparePosition)
+      return tasks
+    },
+    closeDialogTask () {
+      this.$refs.dialogTask.dialog = false
+      this.$refs.taskForm.reset()
+    },
     closeDialogSection () {
       this.$refs.dialogSection.dialog = false
       this.$refs.sectionForm.reset()
+    },
+    getEmailList (payload) {
+      this.taskForm.teamUsers = payload.map(user => user.id)
+    },
+    openDialogTask (section, tasks) {
+      this.taskForm.statusId = section.id
+      this.taskForm.position = tasks.length ? tasks[tasks.length - 1].position + 1 : 0
+      this.$refs.dialogTask.dialog = true
     },
     openDialogSection (mode, section) {
       this.modeSection = mode
@@ -160,42 +245,77 @@ export default {
       }
       this.$refs.dialogSection.dialog = true
     },
+    async handleSubmitTask () {
+      try {
+        const form = { ...this.taskForm }
+        form.projectId = this.projectDetail.id
+        const res = await this.$axios.post('/tasks/create', form)
+        this.$store.commit('project/setTasks', res.data)
+        const section = this.sections.find(section => section.id === res.data.status.id)
+        const formSection = JSON.parse(JSON.stringify(section))
+        delete formSection.id
+        formSection.tasks = formSection.tasks.map(task => task.id)
+        await this.$axios.patch(`/sections/update/${section.id}`, formSection)
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'success',
+          icon: 'check',
+          message: 'Success'
+        }))
+      } catch (err) {
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'error',
+          message: 'Duplicate Task'
+        }))
+      } finally {
+        this.closeDialogTask()
+      }
+    },
+    async editSection (id) {
+      const res = await this.$axios.patch(`/sections/update/${id}`, { title: this.sectionForm.title })
+    },
     async handleSubmitSection () {
       try {
         if (this.modeSection === 'add') {
           const res = await this.$axios.post('/sections/create', { title: this.sectionForm.title })
           this.sections.push(res.data)
           this.$store.commit('project/setSections', this.sections)
-          await this.updateProject()
+          await this.updateProject('Create Section Success')
         } else {
           const res = await this.$axios.patch(`/sections/update/${this.sectionForm.id}`, { title: this.sectionForm.title })
           const index = this.sections.findIndex(section => section.id === res.data.id)
           this.sections.splice(index, 1, res.data)
           this.$store.commit('project/setSections', this.sections)
-          await this.updateProject()
+          await this.updateProject('Edit Section Success')
         }
-        this.$store.commit('alerts/add', new Alert(this, {
-          type: 'success',
-          icon: 'check',
-          message: 'Create Section Success'
-        }))
       } catch (err) {
         this.$store.commit('alerts/add', new Alert(this, {
           type: 'error',
           message: err?.response?.data?.message
         }))
       } finally {
-        this.$refs.dialogSection.dialog = false
+        this.closeDialogSection()
       }
     },
-    async updateProject () {
-      const project = JSON.parse(JSON.stringify(this.projectDetail))
-      delete project.createdBy
-      delete project.id
-      delete project.tasks
-      project.sections = project.sections.map(section => section.id)
-      project.teamUsers = project.teamUsers.map(user => user.id)
-      await this.$axios.patch(`/projects/update/${this.projectDetail.id}`, { ...project })
+    async updateProject (message) {
+      try {
+        const project = JSON.parse(JSON.stringify(this.projectDetail))
+        delete project.createdBy
+        delete project.id
+        delete project.tasks
+        project.sections = project.sections.map(section => section.id)
+        project.teamUsers = project.teamUsers.map(user => user.id)
+        await this.$axios.patch(`/projects/update/${this.projectDetail.id}`, { ...project })
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'success',
+          icon: 'check',
+          message: message ?? 'Update project success'
+        }))
+      } catch (err) {
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'error',
+          message: err?.response?.data?.message
+        }))
+      }
     },
     addTask (indexSection) {
       const newTask = JSON.parse(JSON.stringify(defaultTask))

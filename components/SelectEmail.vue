@@ -11,9 +11,10 @@
     label="Email"
     item-text="email"
     item-value="email"
+    :return-object="returnObject"
     multiple
+    hide-details
     solo
-    outlined
     flat
     class="rounded-lg"
     :menu-props="{
@@ -21,6 +22,7 @@
       rounded: 'lg',
 
     }"
+    :rules="[$rules.required]"
     :no-data-text="($vuetify.noDataText = 'Not found user')"
     placeholder="Search the email"
   >
@@ -35,8 +37,8 @@
       >
         <v-avatar size="10" left :color="randomColor">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
-          <span v-else class="black--text text-uppercase font-weight-medium " style="font-size: 12px;">{{ data.item.firstName.slice(0, 1) +
-            data.item.lastName.slice(0, 1) }}</span>
+          <span v-else class="black--text text-uppercase font-weight-medium " style="font-size: 12px;">{{ data.item?.firstName?.slice(0, 1) +
+            data.item?.lastName?.slice(0, 1) }}</span>
         </v-avatar>
         <p class="mb-0 font-weight-regular" style="font-size: 14px;">
           {{ data.item.email }}
@@ -49,8 +51,8 @@
         <v-avatar size="32" :color="randomColor">
           <img v-if="data.item?.avatar" :src="data.item.avatar">
           <span v-else class="black--text text-subtitle-2 font-weight-medium text-uppercase">{{
-            data.item.firstName.slice(0, 1) +
-              data.item.lastName.slice(0, 1) }}</span>
+            data.item?.firstName?.slice(0, 1) +
+              data.item?.lastName?.slice(0, 1) }}</span>
         </v-avatar>
       </v-list-item-avatar>
       <v-list-item-content>
@@ -70,6 +72,10 @@ import { generateRandomColor } from './../utils/randomColor'
 export default {
   name: 'SelectEmail',
   props: {
+    returnObject: {
+      type: Boolean,
+      default: false
+    },
     label: {
       type: String,
       default: undefined
@@ -124,7 +130,13 @@ export default {
     },
 
     remove (item) {
-      const index = this.selectedList.indexOf(item.email)
+      let index
+      if (typeof item === 'object') {
+        index = this.selectedList.findIndex(select => select.id === item.id)
+      } else {
+        index = this.selectedList.indexOf(item.email)
+      }
+
       if (index >= 0) { this.selectedList.splice(index, 1) }
     }
   }

@@ -58,11 +58,6 @@ export default {
     onClickOutside () {
       this.mini = true
     }
-  },
-  mounted () {
-    if (!this.$auth.loggedIn) {
-      this.$router.push('/login')
-    }
   }
 }
 </script>

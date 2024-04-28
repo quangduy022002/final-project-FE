@@ -140,24 +140,12 @@ export default {
       return { ...this.project }
     }
   },
-  async created () {
-    await this.getUserList()
-    this.checkPermission()
-  },
   methods: {
     handleDisabled (payload) {
       this.disabled = payload
     },
     getEmailList (payload) {
       this.emailList = payload
-    },
-    async getUserList () {
-      try {
-        const { data } = await this.$axios.get('users/getAll')
-
-        this.$store.commit('user/setUserList', data)
-      } catch (error) {
-      }
     },
     async sendInvite () {
       this.loading.sendInvite = true
@@ -176,13 +164,6 @@ export default {
       } catch (error) {
       } finally {
         this.loading.sendInvite = false
-      }
-    },
-    checkPermission () {
-      if (this.$auth.$state.user.id === this.project.createdBy.id) {
-        this.permission = true
-      } else {
-        this.permission = false
       }
     },
     async updateProject () {

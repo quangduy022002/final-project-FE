@@ -6,41 +6,196 @@
     right
     width="35%"
   >
-    <v-card class="fill-height" flat>
-      <v-card-title content-editable class="text-h3 mx-4">
-        Task Title
-      </v-card-title>
-      <v-card-text height="80%">
-        <v-layout v-for="(header, index) in headers" :key="index" align-center class="ma-4">
-          <h3 class="mr-6 font-weight-bold">
-            {{ header.label }}
-          </h3>
-          <v-autocomplete
-            :placeholder="header.placeholder"
-            hide-details
-            solo
-          />
-        </v-layout>
-        <div class="ma-4">
-          <h3 class="font-weight-bold mb-4">
-            Description
-          </h3>
-          <ck-editor />
+    <dialog-common ref="dialogAddMember" @click="$refs.dialogAddMember.dialog = false">
+      <template #header>
+        <h2>
+          Add assignee
+        </h2>
+      </template>
+      <template #content>
+        <div class="mt-2">
+          <v-form ref="">
+            <select-email label="Email" :user-list="userList" :return-object="true" @emailList="getEmailList" />
+          </v-form>
         </div>
-      </v-card-text>
-      <v-card-actions class="ma-6">
-        <v-layout column>
-          <h3 class="font-weight-bold mb-4">
-            Comments
-          </h3>
-          <ck-editor />
+      </template>
+      <template #footer>
+        <v-card flat>
+          <div class="d-flex align-center justify-end" style="gap: 10px">
+            <v-btn outlined class="text-none rounded-lg" @click="$refs.dialogAddMember.dialog = false">
+              Cancel
+            </v-btn>
+            <v-btn
+              type="button"
+              background-color="primary"
+              color="primary"
+              class="text-none rounded-lg"
+              depressed
+              @click="editTask"
+            >
+              Save
+            </v-btn>
+          </div>
+        </v-card>
+      </template>
+    </dialog-common>
+    <v-layout column fill-height>
+      <div class="text-h3 ma-4 ">
+        {{ task?.name }}
+      </div>
+      <div class="d-flex mx-4 align-center">
+        <h3 class="mr-6 font-weight-bold">
+          Assignee
+        </h3>
+        <v-card v-if="task?.teamUsers?.length === 0" flat>
+          <v-btn
+            class="d-flex align-center pl-2 py-8 pr-6 justify-start"
+            color="transparent"
+            elevation
+            @click="$refs.dialogAddMember.dialog = true"
+          >
+            <v-card class="pa-2" style="border: 1px dashed grey; border-radius: 50%">
+              <v-icon size="12" color="grey">
+                mdi-plus
+              </v-icon>
+            </v-card>
+            <p class="mb-0 ml-2 text-subtitle-1 grey--text font-weight-medium text-none">
+              Add member
+            </p>
+          </v-btn>
+        </v-card>
+        <div v-else>
+          <v-layout align-center @click="$refs.dialogAddMember.dialog = true">
+            <v-avatar v-for="(user, index) in task.teamUsers" :key="user.id" size="34" :color="randomColor()" :class="{'mr-n3': index < (task.teamUsers.length - 1)}">
+              <img v-if="user.avatar" :src="user.avatar" alt="avatar">
+              <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ user.firstName.slice(0, 1) +
+                user.lastName.slice(0, 1) }}</span>
+            </v-avatar>
+            <div v-if="task.teamUsers.length > 1" class="ml-2">
+              {{ `${task.teamUsers.length} members` }}
+            </div>
+            <div v-else class="ml-2">
+              {{ task.teamUsers[0].firstName.slice(0, 1) +
+                task.teamUsers[0].lastName.slice(0, 1) }}
+            </div>
+          </v-layout>
+        </div>
+      </div>
+      <div class="d-flex align-center mx-4">
+        <h3 class="font-weight-bold mr-4">
+          Due to
+        </h3>
+        <v-menu
+          ref="menu"
+          v-model="menu"
+          :close-on-content-click="false"
+          :return-value.sync="task.deadline"
+          max-width="290"
+        >
+          <template #activator="{ on, attrs }">
+            <!-- <v-text-field
+              :value="computedDateFormattedMomentjs"
+              clearable
+              label="Formatted with Moment.js"
+              readonly
+              v-bind="attrs"
+              v-on="on"
+              @click:clear="date = null"
+            /> -->
+            <v-card v-if="!task.deadline.length" flat>
+              <v-btn
+                class="d-flex align-center pl-2 py-8 pr-6 justify-start"
+                color="transparent"
+                elevation
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-card class="pa-2" style="border: 1px dashed grey; border-radius: 50%">
+                  <v-icon size="14" color="grey">
+                    mdi-plus
+                  </v-icon>
+                </v-card>
+                <p class="mb-0 ml-2 text-subtitle-1 grey--text font-weight-medium text-none">
+                  Add deadline
+                </p>
+              </v-btn>
+            </v-card>
+            <v-card v-else flat>
+              <v-btn
+                class="d-flex align-center pl-2 py-8 pr-6 justify-start"
+                color="transparent"
+                elevation
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon size="24" color="grey">
+                  mdi-calendar
+                </v-icon>
+
+                <p class="mb-0 ml-2 text-subtitle-1 grey--text font-weight-medium text-none">
+                  {{ task.deadline }}
+                </p>
+              </v-btn>
+            </v-card>
+          </template>
+          <v-date-picker
+            v-model="task.deadline"
+          />
+          <v-spacer />
+          <v-btn
+            text
+            color="primary"
+            @click="menu = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="$refs.menu.save(task.deadline)"
+          >
+            OK
+          </v-btn>
+        </v-menu>
+      </div>
+      <div class="ma-4">
+        <h3 class="font-weight-bold mb-4">
+          Description
+        </h3>
+        <v-textarea
+          solo
+          outlined
+          filled
+          hide-details
+          height="100%"
+          label="Description..."
+        />
+      </div>
+      <v-spacer />
+      <div class="pa-4 justify-content-end">
+        <div class="font-weight-bold text-h6">
+          Comments
+        </div>
+        <v-divider />
+        <v-layout class="mt-4">
+          <v-avatar max-height="38" max-width="38">
+            <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+            <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
+              $auth.user.lastName.slice(0, 1) }}</span>
+          </v-avatar>
+          <v-text-field hide-details outlined dense rounded class="mr-4" />
+          <v-icon>mdi-send</v-icon>
         </v-layout>
-      </v-card-actions>
-    </v-card>
+      </div>
+    </v-layout>
   </v-navigation-drawer>
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { generateRandomColor } from '~/utils/randomColor'
+import { Alert } from '~/store/alerts'
+
 export default {
   name: 'ProjectIndex',
   props: {
@@ -51,6 +206,7 @@ export default {
   },
   data () {
     return {
+      menu: false,
       title: 'Project 1',
       icon: '',
       sections: [
@@ -66,6 +222,32 @@ export default {
           ]
         }
       ],
+      taskForm: {
+        name: undefined,
+        description: '',
+        statusId: 0, // id section
+        typeId: 0,
+        priorityId: 0,
+        originalTime: 0,
+        estimateTime: 0,
+        teamUsers: [],
+        deadline: '',
+        projectId: '',
+        position: 0
+      },
+      task: {
+        deadline: '',
+        description: '',
+        id: '',
+        name: 'chekc',
+        priority: null,
+        teamUsers: [],
+        time: {
+          estimateTime: 0,
+          originalTime: 0
+        },
+        type: null
+      },
       headers: [
         {
           label: 'Assignee',
@@ -82,6 +264,7 @@ export default {
     }
   },
   computed: {
+    ...mapState('user', ['userList']),
     drawer: {
       get () {
         return this.value
@@ -91,15 +274,46 @@ export default {
       }
     }
   },
+  watch: {
+    task () {
+      console.log(this.task)
+    }
+  },
   methods: {
-    addSection () {
-      const newSection = JSON.parse(JSON.stringify(defaultSections))
-      newSection.id = this.sections.length
-      this.sections.push(newSection)
+    randomColor () {
+      const color = generateRandomColor()
+      return color
     },
-    addTask (indexSection) {
-      const newTask = JSON.parse(JSON.stringify(defaultTask))
-      this.sections[indexSection].tasks.push(newTask)
+    getFormEditTask (task) {
+      const form = JSON.parse(JSON.stringify(task))
+      delete form.id
+      delete form.comments
+      delete form.createdBy
+      delete form.project
+      form.teamUsers = form.teamUsers.map(user => user.id)
+      form.estimateTime = form.time.estimateTime
+      form.originalTime = form.time.originalTime
+      form.statusId = form.status.id
+      return form
+    },
+    async editTask () {
+      try {
+        const form = this.getFormEditTask(this.task)
+        res = await this.$axios.patch(`/tasks/update/${this.task.id}`, form)
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'success',
+          icon: 'check',
+          message: 'Update success'
+        }))
+      } catch (err) {
+        this.$store.commit('alerts/add', new Alert(this, {
+          type: 'error',
+          message: err?.response?.data?.message
+        }))
+      }
+    },
+    getEmailList (payload) {
+      this.task.teamUsers = payload
     }
   }
 }

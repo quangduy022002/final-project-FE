@@ -56,7 +56,8 @@ export default {
   },
   methods: {
     async submit () {
-      await this.$axios.post('/projects/create', this.form)
+      const res = await this.$axios.post('/projects/create', this.form)
+      this.$emit('createProject', res.data)
       this.dialog = false
     }
   }

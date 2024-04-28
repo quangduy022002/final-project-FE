@@ -18,6 +18,13 @@ export const mutations = {
   },
   setSections (state, val) {
     state.projectDetail.sections = val
+  },
+  setTasks (state, val) {
+    const indexSection = state.projectDetail.sections.findIndex(section => section.id === val.status.id)
+    state.projectDetail.sections[indexSection].tasks.pushp(val)
+  },
+  swapTaskInColumn (state, { newIndex, oldIndex }) {
+    const value = state.projectDetail.tasks.splice(ol, 1)[0]
   }
 }
 
@@ -25,4 +32,5 @@ export const actions = {
   projectDetail ({ commit }, detail) {
     commit('setProjectDetail', detail)
   }
+
 }
