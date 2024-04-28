@@ -28,7 +28,7 @@
             class="mr-2"
           >
             mdi-delete
-          </v-icon>Delete Post
+          </v-icon>Delete
         </v-list-item-title>
       </v-list-item>
     </v-list>
