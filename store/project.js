@@ -25,7 +25,7 @@ export const mutations = {
   },
   setTasks (state, val) {
     const indexSection = state.projectDetail.sections.findIndex(section => section.id === val.status.id)
-    state.projectDetail.sections[indexSection].tasks.pushp(val)
+    state.projectDetail.sections[indexSection].tasks.push(val)
   }
 }
 
