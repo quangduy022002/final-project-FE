@@ -2,7 +2,8 @@ import { getField, updateField } from 'vuex-map-fields'
 
 export const state = () => ({
   projectDetail: {},
-  priority: []
+  priority: [],
+  type: []
 })
 
 export const getters = {
@@ -19,6 +20,9 @@ export const mutations = {
   },
   setPriority (state, val) {
     state.priority = val
+  },
+  setType (state, val) {
+    state.type = val
   },
   setSections (state, val) {
     state.projectDetail.sections = val

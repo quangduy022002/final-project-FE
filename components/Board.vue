@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/no-template-shadow -->
 <template>
   <div>
-    <navbar-project ref="navTask" v-model="drawer" @ />
+    <navbar-project ref="navTask" v-model="drawer" />
     <dialog-common ref="dialogSection" @click="closeDialogSection">
       <template #header>
         <h2>{{ modeSection ==="add" ? 'Add section' : 'Edit Section' }}</h2>
@@ -72,9 +72,14 @@
             @click="selectTask(task)"
           >
             <v-card-title class="pa-2 text-h5">
-              <v-btn icon>
+              <v-btn v-if="!task.type || task.type.name === 'Pending'" icon @click.stop="clickTaskType(task)">
                 <v-icon>
                   mdi-check-circle-outline
+                </v-icon>
+              </v-btn>
+              <v-btn v-else icon color="success" @click.stop="clickTaskType(task)">
+                <v-icon>
+                  mdi-check-circle
                 </v-icon>
               </v-btn>
               <div>
@@ -181,7 +186,7 @@ export default {
     }
   },
   computed: {
-    ...mapFields('project', ['projectDetail']),
+    ...mapFields('project', ['projectDetail', 'type']),
     ...mapState('user', ['userList']),
     sections: {
       get () {
@@ -223,8 +228,20 @@ export default {
         return 'error'
       }
     },
+    async clickTaskType (task) {
+      let type
+      if (!task.type || task.type.name === 'Pending') {
+        type = this.type.find(value => value.name === 'Done')
+      } else {
+        type = this.type.find(value => value.name === 'Pending')
+      }
+      task.type = type
+      const formTask = this.getFormEditTask(task)
+      formTask.typeId = type.id
+      await this.$axios.patch(`/tasks/update/${task.id}`, formTask)
+      this.$forceUpdate()
+    },
     async changePosition (action, section) {
-      console.log(action)
       if (action?.added) {
         const formTask = this.getFormEditTask(action?.added.element)
         formTask.statusId = section.id
@@ -256,6 +273,9 @@ export default {
       delete form.project
       if (form.priority) {
         form.priorityId = form.priority.id
+      }
+      if (form.priority) {
+        form.typeId = form.type.id
       }
       form.teamUsers = form.teamUsers.map(user => user.id)
       form.estimateTime = form.time.estimateTime

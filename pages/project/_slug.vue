@@ -66,6 +66,7 @@ export default {
     await this.getProjectDetail()
     await this.getUserList()
     await this.getPriority()
+    await this.getType()
     this.checkPermission()
   },
   methods: {
@@ -92,6 +93,10 @@ export default {
     async getPriority () {
       const res = await this.$axios.get('/priorities/getAll')
       this.$store.commit('project/setPriority', res.data)
+    },
+    async getType () {
+      const res = await this.$axios.get('/types/getAll')
+      this.$store.commit('project/setType', res.data)
     }
   }
 }
