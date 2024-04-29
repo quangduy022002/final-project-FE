@@ -48,10 +48,10 @@
         + Add Section
       </v-btn>
     </v-layout>
-    <draggable v-model="sections" group="section" class="d-flex pa-4 overflow-y-auto fill-height" handle=".section-swap">
+    <draggable v-model="sections" group="sectionBoard" class="d-flex pa-4 overflow-y-auto fill-height" handle=".section-swap-board">
       <v-card v-for="(section) in sections" :key="section.id" width="381" class="mr-4" outlined>
         <v-layout align-center class="mx-2">
-          <v-icon class="mr-2 section-swap">
+          <v-icon class="mr-2 section-swap-board">
             mdi-reorder-horizontal
           </v-icon>
           <h2>
@@ -61,9 +61,9 @@
           <v-icon @click="openDialogTask(section, section.tasks)">
             mdi-plus
           </v-icon>
-          <MenuCrud @click-edit="openDialogSection('edit', section)" />
+          <MenuCrud @click-edit="openDialogSection('edit', section)" @click-delete="deleteSection(section)" />
         </v-layout>
-        <draggable v-model="section.tasks" group="tasks" class="pa-2" @change="$event => changePosition($event, section)">
+        <draggable v-model="section.tasks" group="tasksBoard" class="pa-2" @change="$event => changePosition($event, section)">
           <v-card
             v-for="(task) in section.tasks"
             :key="task.id"
@@ -131,6 +131,7 @@ import moment from 'moment'
 import draggable from 'vuedraggable'
 import { mapFields } from 'vuex-map-fields'
 import { mapState } from 'vuex'
+import { CancelToken } from 'axios'
 import { Alert } from '~/store/alerts'
 
 const defaultTask =
@@ -174,6 +175,7 @@ export default {
         projectId: '',
         position: 0
       },
+      cancelEditRequest: undefined,
       modeSection: '',
       items: [{
         title: 'Edit',
@@ -207,6 +209,16 @@ export default {
     }
   },
   methods: {
+    async deleteSection (section) {
+      const index = this.sections.findIndex(sectionData => sectionData.id === section.id)
+      this.sections.splice(index, 1)
+      await this.$axios.delete(`/sections/remove/${section.id}`)
+      this.$store.commit('alerts/add', new Alert(this, {
+        type: 'success',
+        icon: 'check',
+        message: 'Update success'
+      }))
+    },
     getColorChip (priority) {
       if (priority?.name === 'High') {
         return 'error'
@@ -340,18 +352,22 @@ export default {
         this.closeDialogTask()
       }
     },
-    async editSection (id) {
-      await this.$axios.patch(`/sections/update/${id}`, { title: this.sectionForm.title })
-    },
     async handleSubmitSection () {
       try {
+        if (this.cancelEditRequest) {
+          this.cancelEditRequest()
+        }
+        const source = CancelToken.source()
+        this.cancelEditRequest = source.cancel
         if (this.modeSection === 'add') {
-          const res = await this.$axios.post('/sections/create', { title: this.sectionForm.title })
+          const res = await this.$axios.post('/sections/create', { title: this.sectionForm.title }, {
+            cancelToken: source.token
+          })
           this.sections.push(res.data)
           this.$store.commit('project/setSections', this.sections)
           await this.updateProject('Create Section Success')
         } else {
-          const res = await this.$axios.patch(`/sections/update/${this.sectionForm.id}`, { title: this.sectionForm.title })
+          const res = await this.$axios.patch(`/sections/update/${this.sectionForm.id}`, { ...this.sectionForm })
           const index = this.sections.findIndex(section => section.id === res.data.id)
           this.sections.splice(index, 1, res.data)
           this.$store.commit('project/setSections', this.sections)

@@ -68,7 +68,7 @@
                 <v-icon @click="openDialogTask(section, section.tasks)">
                   mdi-plus
                 </v-icon>
-                <MenuCrud @click-edit="openDialogSection('edit', section)" />
+                <MenuCrud @click-edit="openDialogSection('edit', section)" @click-delete="openDialogSection('edit', section)"/>
               </v-layout>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
