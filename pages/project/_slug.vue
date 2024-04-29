@@ -32,6 +32,9 @@
         <v-tab-item>
           <board v-model="drawer" />
         </v-tab-item>
+        <v-tab-item>
+          <calendar />
+        </v-tab-item>
       </v-tabs-items>
     </v-sheet>
   </v-layout>

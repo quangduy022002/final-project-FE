@@ -40,8 +40,18 @@
       </template>
     </dialog-common>
     <v-layout column fill-height>
-      <div class="text-h3 ma-4 ">
+      <div class="text-h3 ma-4 d-flex align-center">
         {{ task?.name }}
+        <v-btn v-if="!task.type || task.type.name === 'Pending'" icon @click.stop="clickTaskType(task)">
+          <v-icon size="36">
+            mdi-check-circle-outline
+          </v-icon>
+        </v-btn>
+        <v-btn v-else icon color="success" @click.stop="clickTaskType(task)">
+          <v-icon size="36">
+            mdi-check-circle
+          </v-icon>
+        </v-btn>
       </div>
       <div class="d-flex mx-4 align-center">
         <h3 class="mr-6 font-weight-bold">
@@ -313,7 +323,7 @@ export default {
   },
   computed: {
     ...mapState('user', ['userList']),
-    ...mapFields('project', ['projectDetail', 'priority']),
+    ...mapFields('project', ['projectDetail', 'priority', 'type']),
     drawer: {
       get () {
         return this.value
@@ -349,6 +359,19 @@ export default {
     },
     shallowCompare (obj1, obj2) {
       return Object.entries(obj1).every(([key, value]) => obj2[key] === value)
+    },
+    async clickTaskType (task) {
+      let type
+      if (!task.type || task.type.name === 'Pending') {
+        type = this.type.find(value => value.name === 'Done')
+      } else {
+        type = this.type.find(value => value.name === 'Pending')
+      }
+      task.type = type
+      const formTask = this.getFormEditTask(task)
+      formTask.typeId = type.id
+      await this.$axios.patch(`/tasks/update/${task.id}`, formTask)
+      this.$forceUpdate()
     },
     getFormEditTask (task) {
       const form = JSON.parse(JSON.stringify(task))
