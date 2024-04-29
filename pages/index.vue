@@ -4,11 +4,11 @@
       <div class="text-h4">
         Analysis
       </div>
-      <v-layout justify-space-around>
-        <v-card class="pa-2 w-100">
+      <v-layout>
+        <v-card class="ma-2 d-flex justify-center" style="width: 100%">
           <chart-pie :tasks="tasks" :type="type" />
         </v-card>
-        <v-card class="pa-2 w-100">
+        <v-card class="ma-2 d-flex justify-center" style="width: 100%">
           <chart-bar :tasks="tasks" :priority="priority" />
         </v-card>
       </v-layout>
