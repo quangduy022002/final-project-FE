@@ -25,9 +25,7 @@
           <overview :project="projectDetail" :permission="permission" />
         </v-tab-item>
         <v-tab-item>
-          <div>
-            123
-          </div>
+          <list />
         </v-tab-item>
         <v-tab-item>
           <board v-model="drawer" />
