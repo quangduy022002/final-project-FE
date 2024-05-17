@@ -68,7 +68,7 @@
                 <v-icon @click="openDialogTask(section, section.tasks)">
                   mdi-plus
                 </v-icon>
-                <MenuCrud @click-edit="openDialogSection('edit', section)" @click-delete="openDialogSection('edit', section)"/>
+                <MenuCrud @click-edit="openDialogSection('edit', section)" @click-delete="deleteSection(section)"/>
               </v-layout>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
@@ -194,7 +194,7 @@ export default {
     ...mapState('user', ['userList']),
     sections: {
       get () {
-        return this.projectDetail?.sections?.length ? JSON.parse(JSON.stringify(this.projectDetail.sections)) : []
+        return this.projectDetail?.sectionsJson?.length ? JSON.parse(JSON.stringify(this.projectDetail.sectionsJson)) : []
       },
       async set (val) {
         this.$store.commit('project/setSections', val)
@@ -211,6 +211,17 @@ export default {
     }
   },
   methods: {
+    async deleteSection (section) {
+      const index = this.sections.findIndex(sectionData => sectionData.id === section.id)
+      this.sections.splice(index, 1)
+      this.$store.commit('project/setSections', this.sections)
+      await this.$axios.delete(`/sections/remove/${section.id}`)
+      this.$store.commit('alerts/add', new Alert(this, {
+        type: 'success',
+        icon: 'check',
+        message: 'Update success'
+      }))
+    },
     getColorChip (priority) {
       if (priority?.name === 'High') {
         return 'error'
@@ -376,9 +387,9 @@ export default {
         delete project.createdBy
         delete project.id
         delete project.tasks
-        project.sections = project.sections.map(section => section.id)
+        project.sectionsJson = project.sectionsJson.map(section => section.id)
         project.teamUsers = project.teamUsers.map(user => user.id)
-        await this.$axios.patch(`/projects/update/${this.projectDetail.id}`, { ...project })
+        await this.$axios.patch(`/projects/update/${this.projectDetail.id}`, { ...project, sections: project.sectionsJson })
         this.$store.commit('alerts/add', new Alert(this, {
           type: 'success',
           icon: 'check',

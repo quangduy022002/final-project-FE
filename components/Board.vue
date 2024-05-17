@@ -131,7 +131,6 @@ import moment from 'moment'
 import draggable from 'vuedraggable'
 import { mapFields } from 'vuex-map-fields'
 import { mapState } from 'vuex'
-import { CancelToken } from 'axios'
 import { Alert } from '~/store/alerts'
 
 const defaultTask =
@@ -192,7 +191,7 @@ export default {
     ...mapState('user', ['userList']),
     sections: {
       get () {
-        return this.projectDetail?.sections?.length ? JSON.parse(JSON.stringify(this.projectDetail.sections)) : []
+        return this.projectDetail?.sectionsJson?.length ? JSON.parse(JSON.stringify(this.projectDetail.sectionsJson)) : []
       },
       async set (val) {
         this.$store.commit('project/setSections', val)
@@ -212,6 +211,7 @@ export default {
     async deleteSection (section) {
       const index = this.sections.findIndex(sectionData => sectionData.id === section.id)
       this.sections.splice(index, 1)
+      this.$store.commit('project/setSections', this.sections)
       await this.$axios.delete(`/sections/remove/${section.id}`)
       this.$store.commit('alerts/add', new Alert(this, {
         type: 'success',
@@ -357,12 +357,8 @@ export default {
         if (this.cancelEditRequest) {
           this.cancelEditRequest()
         }
-        const source = CancelToken.source()
-        this.cancelEditRequest = source.cancel
         if (this.modeSection === 'add') {
-          const res = await this.$axios.post('/sections/create', { title: this.sectionForm.title }, {
-            cancelToken: source.token
-          })
+          const res = await this.$axios.post('/sections/create', { title: this.sectionForm.title })
           this.sections.push(res.data)
           this.$store.commit('project/setSections', this.sections)
           await this.updateProject('Create Section Success')
@@ -388,9 +384,9 @@ export default {
         delete project.createdBy
         delete project.id
         delete project.tasks
-        project.sections = project.sections.map(section => section.id)
+        project.sectionsJson = project.sectionsJson.map(section => section.id)
         project.teamUsers = project.teamUsers.map(user => user.id)
-        await this.$axios.patch(`/projects/update/${this.projectDetail.id}`, { ...project })
+        await this.$axios.patch(`/projects/update/${this.projectDetail.id}`, { ...project, sections: project.sectionsJson })
         this.$store.commit('alerts/add', new Alert(this, {
           type: 'success',
           icon: 'check',

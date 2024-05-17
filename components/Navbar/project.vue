@@ -234,16 +234,112 @@
         <div class="font-weight-bold text-h6">
           Comments
         </div>
+        <div v-if="taskComments.length">
+          <v-divider />
+          <v-form @submit.prevent="editComment()">
+            <v-layout
+              v-for="taskComment in taskComments"
+              :key="taskComment.id"
+              class="my-4"
+              align-center
+              style="gap: 10px;"
+            >
+              <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
+                <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+                <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
+                  $auth.user.lastName.slice(0, 1) }}</span>
+              </v-avatar>
+              <v-layout v-if="editMode.mode && editMode.id === taskComment.id">
+                <v-text-field
+                  v-model="editMode.content"
+                  hide-details
+                  outlined
+                  dense
+                  rounded
+                  :autofocus="true"
+                />
+                <v-btn icon type="submit">
+                  <v-icon>
+                    mdi-send
+                  </v-icon>
+                </v-btn>
+              </v-layout>
+              <v-layout v-else>
+                <div class="black--text text-subtitle">
+                  {{ taskComment.content }}
+                </div>
+
+                <v-spacer />
+                <v-menu
+                  bottom
+                  offset-y
+                  :close-on-click="true"
+                >
+                  <template #activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      mdi-dots-horizontal
+                    </v-icon>
+                  </template>
+                  <v-list class="d-block">
+                    <v-list-item v-if="$auth.user.id === taskComment.createdBy.id" @click="openEditMode(taskComment.id, taskComment.content)">
+                      <v-list-item-title>
+                        <v-icon
+                          class="mr-2"
+                        >
+                          mdi-pencil
+                        </v-icon>Edit
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="$auth.user.id === taskComment.createdBy.id" @click="deleteComment(taskComment)">
+                      <v-list-item-title>
+                        <v-icon
+                          class="mr-2"
+                        >
+                          mdi-delete
+                        </v-icon>Delete
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="$emit('click-delete')">
+                      <v-list-item-title>
+                        <v-icon
+                          class="mr-2"
+                        >
+                          mdi-reply
+                        </v-icon>Reply
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </v-layout>
+            </v-layout>
+          </v-form>
+        </div>
         <v-divider />
-        <v-layout class="mt-4" style="gap: 10px;">
-          <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
-            <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
-            <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
-              $auth.user.lastName.slice(0, 1) }}</span>
-          </v-avatar>
-          <v-text-field hide-details outlined dense rounded class="mr-4" />
-          <v-icon>mdi-send</v-icon>
-        </v-layout>
+        <v-form ref="formComment" @submit.prevent="addComment(task.id, comment)">
+          <v-layout class="mt-4" style="gap: 10px;">
+            <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
+              <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+              <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
+                $auth.user.lastName.slice(0, 1) }}</span>
+            </v-avatar>
+            <v-text-field
+              v-model="comment"
+              hide-details
+              outlined
+              dense
+              rounded
+              class="mr-4"
+            />
+            <v-btn icon type="submit">
+              <v-icon>
+                mdi-send
+              </v-icon>
+            </v-btn>
+          </v-layout>
+        </v-form>
       </div>
     </v-layout>
   </v-navigation-drawer>
@@ -264,22 +360,15 @@ export default {
   data () {
     return {
       editEmail: [],
+      comment: '',
+      editMode: {
+        mode: false,
+        id: '',
+        content: ''
+      },
       menu: false,
       title: 'Project 1',
       icon: '',
-      sections: [
-        {
-          id: 0,
-          title: 'Section title',
-          tasks: [
-            {
-              title: 'Task title',
-              complete: false,
-              assign: []
-            }
-          ]
-        }
-      ],
       taskForm: {
         name: undefined,
         description: '',
@@ -323,7 +412,7 @@ export default {
   },
   computed: {
     ...mapState('user', ['userList']),
-    ...mapFields('project', ['projectDetail', 'priority', 'type']),
+    ...mapFields('project', ['projectDetail', 'priority', 'type', 'comments']),
     drawer: {
       get () {
         return this.value
@@ -331,6 +420,12 @@ export default {
       set (value) {
         this.$emit('input', value)
       }
+    },
+    taskComments () {
+      const comments = this.comments.filter(comment =>
+        comment.taskId === this.task.id
+      )
+      return comments
     }
   },
   watch: {
@@ -345,6 +440,43 @@ export default {
     }
   },
   methods: {
+    openEditMode (id, content) {
+      this.editMode.mode = true
+      this.editMode.id = id
+      this.editMode.content = content
+    },
+    async editComment () {
+      try {
+        if (this.editMode.content.length) {
+          this.$store.commit('project/editComment', { id: this.editMode.id, content: this.editMode.content })
+          await this.$axios.patch(`/comments/update/${this.editMode.id}`, { content: this.editMode.content })
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        this.editMode.mode = false
+        this.editMode.id = ''
+        this.editMode.content = ''
+      }
+    },
+    async deleteComment (comment) {
+      this.$store.commit('project/deleteComment', comment)
+      await this.$axios.delete(`/comments/remove/${comment.id}`)
+    },
+    async addComment (taskId, content, parentId) {
+      const body = {
+        taskId,
+        content
+      }
+      if (parentId) {
+        body.parentId = parentId
+      }
+      if (content.length) {
+        const res = await this.$axios.post('/comments/create', body)
+        this.$store.commit('project/addComment', res.data)
+        this.$refs.formComment.reset()
+      }
+    },
     setPriority (priority) {
       this.task.priority = priority
     },

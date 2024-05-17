@@ -68,6 +68,7 @@ export default {
     await this.getUserList()
     await this.getPriority()
     await this.getType()
+    await this.getComment()
     this.checkPermission()
   },
   methods: {
@@ -98,6 +99,10 @@ export default {
     async getType () {
       const res = await this.$axios.get('/types/getAll')
       this.$store.commit('project/setType', res.data)
+    },
+    async getComment () {
+      const res = await this.$axios.get('/comments/getAll')
+      this.$store.commit('project/setComments', res.data)
     }
   }
 }
