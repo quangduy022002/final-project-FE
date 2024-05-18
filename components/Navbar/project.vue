@@ -15,7 +15,7 @@
       <template #content>
         <div class="mt-2">
           <v-form ref="">
-            <select-email label="Email" :user-list="userList" :selected="task.teamUsers" :return-object="true" @emailList="getEmailList" />
+            <select-email label="Email" :user-list="task.teamUsers" :selected="task.teamUsers" :return-object="true" @emailList="getEmailList" />
           </v-form>
         </div>
       </template>
@@ -143,20 +143,22 @@
             v-model="task.deadline"
           />
           <v-spacer />
-          <v-btn
-            text
-            color="primary"
-            @click="menu = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            text
-            color="primary"
-            @click="$refs.menu.save(task.deadline)"
-          >
-            OK
-          </v-btn>
+          <v-card class="d-flex" elevation="0">
+            <v-btn
+              text
+              color="primary"
+              @click="menu = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.menu.save(task.deadline)"
+            >
+              OK
+            </v-btn>
+          </v-card>
         </v-menu>
       </div>
       <div class="d-flex mx-4 align-center">
