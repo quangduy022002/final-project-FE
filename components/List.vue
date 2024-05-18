@@ -77,6 +77,7 @@
                   <v-list-item
                     v-for="(task) in section.tasks"
                     :key="task.id"
+                    @click="selectTask(task)"
                   >
                     <v-btn v-if="!task.type || task.type.name === 'Pending'" icon @click.stop="clickTaskType(task)">
                       <v-icon>
@@ -203,7 +204,7 @@ export default {
     },
     tasks: {
       get () {
-        return this.projectDetail?.tasks?.length ? JSON.parse(JSON.stringify(this.projectDetail.tasks)) : []
+        return this.projectDetail?.tasksJson?.length ? JSON.parse(JSON.stringify(this.projectDetail.tasksJson)) : []
       },
       set (val) {
         this.$store.commit('project/setTasks', val)

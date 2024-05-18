@@ -36,7 +36,7 @@
         @click:close="remove(data.item)"
       >
         <v-avatar size="10" left :color="data.item.color">
-          <img v-if="data.item?.avatar" :src="data.item.avatar">
+          <v-img v-if="data.item?.avatar" :src="data.item.avatar" />
           <span v-else class="black--text text-uppercase font-weight-medium " style="font-size: 12px;">{{ data.item?.firstName?.slice(0, 1) +
             data.item?.lastName?.slice(0, 1) }}</span>
         </v-avatar>
@@ -47,9 +47,9 @@
     </template>
     <template #item="data">
       <v-list-item-avatar class="mr-2">
-        <img v-if="data.item?.avatar" :src="data.item.avatar">
+        <v-img v-if="data.item?.avatar" :src="data.item.avatar" />
         <v-avatar size="32" :color="data.item.color">
-          <img v-if="data.item?.avatar" :src="data.item.avatar">
+          <v-img v-if="data.item?.avatar" :src="data.item.avatar" />
           <span v-else class="black--text text-subtitle-2 font-weight-medium text-uppercase">{{
             data.item?.firstName?.slice(0, 1) +
               data.item?.lastName?.slice(0, 1) }}</span>

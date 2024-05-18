@@ -15,7 +15,7 @@
       <template #content>
         <div class="mt-2">
           <v-form ref="">
-            <select-email label="Email" :user-list="task.teamUsers" :selected="task.teamUsers" :return-object="true" @emailList="getEmailList" />
+            <select-email label="Email" :user-list="getAssignMember(task)" :selected="task.teamUsers" :return-object="true" @emailList="getEmailList" />
           </v-form>
         </div>
       </template>
@@ -75,9 +75,9 @@
           </v-btn>
         </v-card>
         <div v-else>
-          <v-layout align-center @click="$refs.dialogAddMember.dialog = true">
+          <v-layout v-if="task.teamUsers.length" align-center @click="$refs.dialogAddMember.dialog = true">
             <v-avatar v-for="(user, index) in task.teamUsers" :key="user.id" size="34" :color="user.color" :class="{'mr-n3': index < (task.teamUsers.length - 1)}">
-              <img v-if="user.avatar" :src="user.avatar" alt="avatar">
+              <img v-if="user?.avatar" :src="user.avatar" alt="avatar">
               <span v-else class="black--text text-subtitle-1 text-uppercase font-weight-medium ">{{ user.firstName.slice(0, 1) +
                 user.lastName.slice(0, 1) }}</span>
             </v-avatar>
@@ -247,7 +247,7 @@
               style="gap: 10px;"
             >
               <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
-                <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+                <img v-if="$auth.user.avatar" :src="$auth.user.avatar" alt="avatar">
                 <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
                   $auth.user.lastName.slice(0, 1) }}</span>
               </v-avatar>
@@ -299,7 +299,7 @@
                       style="gap: 10px;"
                     >
                       <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
-                        <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+                        <img v-if="$auth.user.avatar" :src="$auth.user.avatar" alt="avatar">
                         <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
                           $auth.user.lastName.slice(0, 1) }}</span>
                       </v-avatar>
@@ -352,7 +352,7 @@
         <v-form ref="formComment" @submit.prevent="addComment(task.id)">
           <v-layout class="mt-4" style="gap: 10px;">
             <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
-              <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+              <img v-if="$auth.user.avatar" :src="$auth.user.avatar" alt="avatar">
               <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
                 $auth.user.lastName.slice(0, 1) }}</span>
             </v-avatar>
@@ -498,6 +498,9 @@ export default {
     }
   },
   methods: {
+    getAssignMember (task) {
+      return [...task.teamUsers, this.$auth.user]
+    },
     openViewReply (comment) {
       comment.viewReply = !comment.viewReply
       this.$forceUpdate()
