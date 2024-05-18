@@ -38,12 +38,6 @@
       </template>
     </dialog-common>
     <v-layout class="my-2 ml-4">
-      <v-btn>
-        <v-icon class="mr-1">
-          mdi-filter-variant
-        </v-icon>
-        Filter
-      </v-btn>
       <v-btn plain @click="openDialogSection('add')">
         + Add Section
       </v-btn>
