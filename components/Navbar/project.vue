@@ -241,7 +241,7 @@
               v-for="taskComment in taskComments"
               :key="taskComment.id"
               class="my-4"
-              align-center
+              align-start
               style="gap: 10px;"
             >
               <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
@@ -265,60 +265,89 @@
                 </v-btn>
               </v-layout>
               <v-layout v-else>
-                <div class="black--text text-subtitle">
-                  {{ taskComment.content }}
-                </div>
-
-                <v-spacer />
-                <v-menu
-                  bottom
-                  offset-y
-                  :close-on-click="true"
-                >
-                  <template #activator="{ on, attrs }">
-                    <v-icon
-                      v-bind="attrs"
-                      v-on="on"
+                <div>
+                  <v-card outlined class="px-2 text-wrap">
+                    <div class="text-subtitle-2">
+                      {{ taskComment.createdBy.firstName + ' ' + taskComment.createdBy.lastName }}
+                    </div>
+                    <v-card flat class="text-subtitle text-wrap">
+                      {{ taskComment.content }}
+                    </v-card>
+                  </v-card>
+                  <v-layout>
+                    <v-btn x-small elevation="0" plain @click="openEditMode(taskComment.id, taskComment.content)">
+                      Edit
+                    </v-btn>
+                    <v-btn x-small elevation="0" plain @click="openReplyMode(taskComment.id, taskComment.createdBy.firstName, taskComment.createdBy.lastName)">
+                      Reply
+                    </v-btn>
+                    <v-btn x-small elevation="0" plain @click="deleteComment(taskComment)">
+                      Delete
+                    </v-btn>
+                    <v-btn v-if="taskComment?.children && taskComment?.children.length" x-small elevation="0" plain @click="openViewReply(taskComment)">
+                      {{ taskComment.viewReply ? "Close view" : `View reply(${taskComment.children.length})` }}
+                    </v-btn>
+                  </v-layout>
+                  <div v-if="taskComment.viewReply">
+                    <v-layout
+                      v-for="childrenComment in taskComment.children"
+                      :key="childrenComment.id"
+                      class="my-4"
+                      align-start
+                      style="gap: 10px;"
                     >
-                      mdi-dots-horizontal
-                    </v-icon>
-                  </template>
-                  <v-list class="d-block">
-                    <v-list-item v-if="$auth.user.id === taskComment.createdBy.id" @click="openEditMode(taskComment.id, taskComment.content)">
-                      <v-list-item-title>
-                        <v-icon
-                          class="mr-2"
-                        >
-                          mdi-pencil
-                        </v-icon>Edit
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-list-item v-if="$auth.user.id === taskComment.createdBy.id" @click="deleteComment(taskComment)">
-                      <v-list-item-title>
-                        <v-icon
-                          class="mr-2"
-                        >
-                          mdi-delete
-                        </v-icon>Delete
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="$emit('click-delete')">
-                      <v-list-item-title>
-                        <v-icon
-                          class="mr-2"
-                        >
-                          mdi-reply
-                        </v-icon>Reply
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
+                      <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
+                        <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
+                        <span v-else class="black--text text-subtitle-2 text-uppercase font-weight-medium ">{{ $auth.user.firstName.slice(0, 1) +
+                          $auth.user.lastName.slice(0, 1) }}</span>
+                      </v-avatar>
+                      <v-layout v-if="editMode.mode && editMode.id === childrenComment.id">
+                        <v-text-field
+                          v-model="editMode.content"
+                          hide-details
+                          outlined
+                          dense
+                          rounded
+                          :autofocus="true"
+                        />
+                        <v-btn icon type="submit">
+                          <v-icon>
+                            mdi-send
+                          </v-icon>
+                        </v-btn>
+                      </v-layout>
+                      <v-layout v-else>
+                        <div>
+                          <v-card outlined class="px-2 text-wrap">
+                            <div class="text-subtitle-2">
+                              {{ childrenComment.createdBy.firstName + ' ' + taskComment.createdBy.lastName }}
+                            </div>
+                            <v-card flat class="text-subtitle text-wrap">
+                              {{ childrenComment.content }}
+                            </v-card>
+                          </v-card>
+                          <v-layout>
+                            <v-btn x-small elevation="0" plain @click="openEditMode(childrenComment.id, childrenComment.content)">
+                              Edit
+                            </v-btn>
+                            <v-btn x-small elevation="0" plain @click="openReplyMode(taskComment.id, taskComment.createdBy.firstName, taskComment.createdBy.lastName)">
+                              Reply
+                            </v-btn>
+                            <v-btn x-small elevation="0" plain @click="deleteComment(childrenComment)">
+                              Delete
+                            </v-btn>
+                          </v-layout>
+                        </div>
+                      </v-layout>
+                    </v-layout>
+                  </div>
+                </div>
               </v-layout>
             </v-layout>
           </v-form>
         </div>
         <v-divider />
-        <v-form ref="formComment" @submit.prevent="addComment(task.id, comment)">
+        <v-form ref="formComment" @submit.prevent="addComment(task.id)">
           <v-layout class="mt-4" style="gap: 10px;">
             <v-avatar min-height="38" max-height="38" max-width="38" min-width="38" :color="$auth.user.color">
               <img v-if="$auth.user.avatar" :src="user.avatar" alt="avatar">
@@ -326,12 +355,30 @@
                 $auth.user.lastName.slice(0, 1) }}</span>
             </v-avatar>
             <v-text-field
+              v-if="replyMode.mode"
               v-model="comment"
               hide-details
               outlined
               dense
               rounded
               class="mr-4"
+              :append-icon="replyMode.mode? 'mdi-close' : ''"
+              :label="replyMode.mode ? `Reply ${replyMode.person}` : ''"
+              :autofocus="replyMode.autofocus"
+              @click:append="clearReplyMode"
+            />
+            <v-text-field
+              v-else
+              v-model="comment"
+              hide-details
+              outlined
+              dense
+              rounded
+              class="mr-4"
+              :append-icon="replyMode.mode? 'mdi-close' : ''"
+              :label="replyMode.mode ? `Reply ${replyMode.person}` : ''"
+              :autofocus="replyMode.autofocus"
+              @click:append="clearReplyMode"
             />
             <v-btn icon type="submit">
               <v-icon>
@@ -361,6 +408,12 @@ export default {
     return {
       editEmail: [],
       comment: '',
+      replyMode: {
+        id: '',
+        mode: false,
+        person: '',
+        autofocus: false
+      },
       editMode: {
         mode: false,
         id: '',
@@ -425,7 +478,10 @@ export default {
       const comments = this.comments.filter(comment =>
         comment.taskId === this.task.id
       )
-      return comments
+      return comments.map((comment) => {
+        comment.viewReply = false
+        return comment
+      })
     }
   },
   watch: {
@@ -440,6 +496,22 @@ export default {
     }
   },
   methods: {
+    openViewReply (comment) {
+      comment.viewReply = !comment.viewReply
+      this.$forceUpdate()
+    },
+    openReplyMode (id, firstName, lastName) {
+      this.replyMode.id = id
+      this.replyMode.person = firstName + ' ' + lastName
+      this.replyMode.mode = true
+      this.replyMode.autofocus = true
+    },
+    clearReplyMode () {
+      this.replyMode.id = ''
+      this.replyMode.person = ''
+      this.replyMode.mode = false
+      this.replyMode.autofocus = false
+    },
     openEditMode (id, content) {
       this.editMode.mode = true
       this.editMode.id = id
@@ -463,18 +535,26 @@ export default {
       this.$store.commit('project/deleteComment', comment)
       await this.$axios.delete(`/comments/remove/${comment.id}`)
     },
-    async addComment (taskId, content, parentId) {
+    async addComment (taskId) {
       const body = {
         taskId,
-        content
+        content: this.comment
       }
-      if (parentId) {
-        body.parentId = parentId
+      if (this.replyMode.id.length && this.replyMode.mode) {
+        body.parentId = this.replyMode.id
       }
-      if (content.length) {
+      if (this.comment.length) {
         const res = await this.$axios.post('/comments/create', body)
-        this.$store.commit('project/addComment', res.data)
+        if (!this.replyMode.mode) {
+          this.$store.commit('project/addComment', res.data)
+        } else {
+          this.$store.commit('project/addChildrenComment', { comment: res.data, parentId: this.replyMode.id })
+        }
         this.$refs.formComment.reset()
+        this.comment = ''
+        this.replyMode.id = ''
+        this.replyMode.person = ''
+        this.replyMode.mode = false
       }
     },
     setPriority (priority) {

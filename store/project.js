@@ -19,6 +19,13 @@ export const mutations = {
   addComment (state, comment) {
     state.comments.push(comment)
   },
+  addChildrenComment (state, { comment, parentId }) {
+    const findParentComment = state.comments.find(comment => comment.id === parentId)
+    if (!findParentComment?.children) {
+      findParentComment.children = []
+    }
+    findParentComment.children.push(comment)
+  },
   editComment (state, { id, content }) {
     const taskComment = state.comments.find(commentData => commentData.id === id)
     taskComment.content = content
