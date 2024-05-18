@@ -357,11 +357,12 @@ export default {
           this.$store.commit('project/setSections', this.sections)
           await this.updateProject('Create Section Success')
         } else {
+          this.sectionForm.tasks = this.sectionForm.tasks.map((task) => { return task.id })
           const res = await this.$axios.patch(`/sections/update/${this.sectionForm.id}`, { ...this.sectionForm })
           const index = this.sections.findIndex(section => section.id === res.data.id)
           this.sections.splice(index, 1, res.data)
           this.$store.commit('project/setSections', this.sections)
-          await this.updateProject('Edit Section Success')
+          // await this.updateProject('Edit Section Success')
         }
       } catch (err) {
         this.$store.commit('alerts/add', new Alert(this, {
